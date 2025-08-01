@@ -21,7 +21,7 @@
             height: 100%;
             background-size: cover;
             background-position: center;
-            transition: opacity 0.8s ease-in-out; 
+            transition: opacity 0.8s ease-in-out;
         }
         #bg-image-1 {
             z-index: -2;
@@ -39,7 +39,7 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.4);
         }
-        
+
         /* 標題動畫 */
         #main-title, #sub-title {
             transition: opacity 0.4s ease-in-out;
@@ -67,7 +67,7 @@
     <div id="bg-image-2" class="bg-image-container"></div>
 
     <div id="main-container" class="min-h-screen flex flex-col items-center justify-start pt-24 md:pt-32 px-4 pb-12">
-        
+
         <div class="text-center mb-8">
             <h1 id="main-title" class="text-4xl md:text-5xl font-bold tracking-wider text-shadow-lg">探索世界</h1>
             <p id="sub-title" class="text-lg md:text-xl mt-2 text-gray-200">從選擇一個國家開始您的旅程</p>
@@ -90,7 +90,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="mt-12 h-10">
             <button id="back-button" class="hidden opacity-0 transition-opacity duration-300 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg">
                 &larr; 返回
@@ -204,7 +204,7 @@
         // 更新視圖的總函數
         async function updateView(newState) {
             const currentView = document.getElementById(currentState === 'final' ? 'final-link-container' : `${currentState}-selection`);
-            
+
             mainTitle.style.opacity = 0;
             subTitle.style.opacity = 0;
             animateCardsOut(currentView);
@@ -241,14 +241,14 @@
                 backButton.classList.add('opacity-100');
                 newBgUrl = travelData[selectedCountry].img;
             }
-            
+
             changeBackground(newBgUrl);
 
             mainTitle.textContent = newTitleText;
             subTitle.textContent = newSubTitleText;
             mainTitle.style.opacity = 1;
             subTitle.style.opacity = 1;
-            
+
             if(newView) {
                 newView.classList.remove('hidden');
                 requestAnimationFrame(() => animateCardsIn(newView));
@@ -277,7 +277,7 @@
         // 顯示最終連結
         function displayFinalLink(country, city) {
             document.getElementById('final-destination').textContent = city;
-            document.getElementById('final-link').href = 'index.html'; 
+            document.getElementById('final-link').href = 'index.html';
         }
 
         // 返回按鈕事件
@@ -299,4 +299,3 @@
     </script>
 </body>
 </html>
-
