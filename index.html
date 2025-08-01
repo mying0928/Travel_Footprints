@@ -75,7 +75,7 @@
 
         <div id="selection-container" class="w-full max-w-4xl">
             <div id="country-selection" class="card-container">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
             </div>
             <div id="city-selection" class="card-container hidden">
                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -104,18 +104,26 @@
         const travelData = {
             "泰國": {
                 img: "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2070&auto=format&fit=crop",
-                cities: { "曼谷": { img: "https://images.unsplash.com/photo-1539040292042-81c53e548553?q=80&w=2070&auto=format&fit=crop" } }
+                cities: { "曼谷": { img: "https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" } }
             },
             "越南": {
                 img: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070&auto=format&fit=crop",
-                cities: { "富國島": { img: "https://images.unsplash.com/photo-1629573494435-75839356a49f?q=80&w=2070&auto=format&fit=crop" } }
+                cities: { "富國島": { img: "https://images.unsplash.com/photo-1693294603830-f44c9511d643?q=80&w=3133&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" } }
             },
             "日本": {
                 img: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=2070&auto=format&fit=crop",
                 cities: {
-                    "大阪": { img: "https://images.unsplash.com/photo-1577985132903-55e7543881b2?q=80&w=1974&auto=format&fit=crop" },
+                    "大阪": { img: "https://images.unsplash.com/photo-1648129866953-cb22eec73d26?q=80&w=2342&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
                     "京都": { img: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?q=80&w=2070&auto=format&fit=crop" },
-                    "奈良": { img: "https://images.unsplash.com/photo-1589709112838-f88f3a359159?q=80&w=2070&auto=format&fit=crop" }
+                    "奈良": { img: "https://images.unsplash.com/photo-1550303435-1703d8811aaa?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+                }
+            },
+            "義大利": {
+                img: "https://images.unsplash.com/photo-1515859005217-8a1f08870f59?q=80&w=2070&auto=format&fit=crop",
+                cities: {
+                    "羅馬": { img: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=1996&auto=format&fit=crop" },
+                    "佛羅倫斯": { img: "https://images.unsplash.com/photo-1528114637639-54b5a5b3a39c?q=80&w=2070&auto=format&fit=crop" },
+                    "威尼斯": { img: "https://images.unsplash.com/photo-1520175480921-4edfa29636b2?q=80&w=1974&auto=format&fit=crop" }
                 }
             }
         };
@@ -197,16 +205,13 @@
         async function updateView(newState) {
             const currentView = document.getElementById(currentState === 'final' ? 'final-link-container' : `${currentState}-selection`);
             
-            // 1. 同時淡出標題和卡片
             mainTitle.style.opacity = 0;
             subTitle.style.opacity = 0;
             animateCardsOut(currentView);
 
-            // 2. 等待淡出動畫結束
             await new Promise(resolve => setTimeout(resolve, 500));
             currentView.classList.add('hidden');
 
-            // 3. 更新狀態、內容和背景
             currentState = newState;
             let newView;
             let newBgUrl;
@@ -237,16 +242,13 @@
                 newBgUrl = travelData[selectedCountry].img;
             }
             
-            // 4. 切換背景
             changeBackground(newBgUrl);
 
-            // 5. 更新文字並淡入標題
             mainTitle.textContent = newTitleText;
             subTitle.textContent = newSubTitleText;
             mainTitle.style.opacity = 1;
             subTitle.style.opacity = 1;
             
-            // 6. 顯示新的視圖容器，並觸發卡片進場動畫
             if(newView) {
                 newView.classList.remove('hidden');
                 requestAnimationFrame(() => animateCardsIn(newView));

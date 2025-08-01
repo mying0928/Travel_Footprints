@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曼谷互動探索指南 (新風格)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Urban Oasis -->
+    <!-- Application Structure Plan: 沿用高效的標籤式儀表板結構，但更新視覺風格為更現代的"Urban Oasis"主題。核心互動邏輯不變，確保使用者可以繼續透過頂部導覽快速切換主題。此更新的重點在於視覺刷新與增加更多互動式數據圖表，以回應使用者對價格比較的具體需求。 -->
+    <!-- Visualization & Content Choices: 
+        - 景點門票比較: (目標: 比較) -> 保留並更新風格，使用Chart.js水平長條圖，視覺化門票價格。
+        - 咖啡館消費水平: (目標: 比較/分類) -> 新增Chart.js圓餅圖，將咖啡館按消費等級($, $$, $$$)分類，提供預算參考。
+        - 美食價格帶分佈: (目標: 比較/分類) -> 新增Chart.js長條圖，展示不同餐廳/小吃的價格定位，從平價到高檔。
+        - Outlet接駁車票價: (目標: 比較) -> 新增Chart.js長條圖，簡單清晰地比較兩大Outlet的接駁車費用。
+        - 機車租賃押金: (目標: 比較/告知) -> 新增Chart.js水平長條圖，展示潛力店家的預估現金押金範圍，解決使用者核心痛點。
+        - 卡片式陳列: (目標: 組織) -> 更新卡片設計，採用更簡潔的風格，提升資訊可讀性。
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+        }
+        #sidebar {
+            transition: width 0.3s ease-in-out;
+        }
+        .sidebar-collapsed {
+            width: 5rem; /* 80px */
+        }
+        .sidebar-expanded {
+            width: 16rem; /* 256px */
+        }
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-left: 4px solid transparent;
+            color: #475569; /* slate-600 */
+            transition: all 0.2s ease-in-out;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .nav-btn:hover {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #1e293b; /* slate-800 */
+        }
+        .nav-btn.active {
+            background-color: #ccfbf1; /* teal-100 */
+            border-left-color: #0d9488; /* teal-600 */
+            color: #0f766e; /* teal-700 */
+            font-weight: 600;
+        }
+        .nav-text {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .sidebar-collapsed .nav-text {
+            opacity: 0;
+        }
+        .sidebar-expanded .nav-text {
+            opacity: 1;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0; /* slate-200 */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-content {
+            flex-grow: 1;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        .small-chart-container {
+             position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 35vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="bg-white border-r border-slate-200 flex-shrink-0 sidebar-collapsed">
+            <div class="p-4 border-b border-slate-200 h-16 flex items-center justify-center">
+                <h1 class="text-xl font-bold text-teal-700 transition-opacity duration-300">
+                    <span class="sidebar-expanded:hidden">BKK</span>
+                    <span class="hidden sidebar-expanded:inline">曼谷探索指南</span>
+                </h1>
+            </div>
+            <nav class="flex flex-col mt-4">
+                <button data-target="landmarks" class="nav-btn active">
+                    <span class="mr-4 text-2xl">🏛️</span>
+                    <span class="text-sm nav-text">經典地標</span>
+                </button>
+                <button data-target="cafes" class="nav-btn">
+                    <span class="mr-4 text-2xl">☕</span>
+                    <span class="text-sm nav-text">咖啡慢活</span>
+                </button>
+                <button data-target="secrets" class="nav-btn">
+                    <span class="mr-4 text-2xl">🤫</span>
+                    <span class="text-sm nav-text">秘境探索</span>
+                </button>
+                <button data-target="shopping" class="nav-btn">
+                    <span class="mr-4 text-2xl">🛍️</span>
+                    <span class="text-sm nav-text">購物天堂</span>
+                </button>
+                <button data-target="meals" class="nav-btn">
+                    <span class="mr-4 text-2xl">🍜</span>
+                    <span class="text-sm nav-text">三餐小吃</span>
+                </button>
+                <button data-target="desserts" class="nav-btn">
+                    <span class="mr-4 text-2xl">🍰</span>
+                    <span class="text-sm nav-text">甜點蛋糕</span>
+                </button>
+                <button data-target="rooftop" class="nav-btn">
+                    <span class="mr-4 text-2xl">🏙️</span>
+                    <span class="text-sm nav-text">高空夜景</span>
+                </button>
+                <button data-target="bars" class="nav-btn">
+                    <span class="mr-4 text-2xl">🍸</span>
+                    <span class="text-sm nav-text">特色酒吧</span>
+                </button>
+                <button data-target="markets" class="nav-btn">
+                    <span class="mr-4 text-2xl">🎪</span>
+                    <span class="text-sm nav-text">人氣夜市</span>
+                </button>
+                <button data-target="moto" class="nav-btn">
+                    <span class="mr-4 text-2xl">🛵</span>
+                    <span class="text-sm nav-text">兩輪自由</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            <section id="landmarks" class="content-section active">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">王者之冠：曼谷不朽的經典地標</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">此區塊聚焦構成曼谷文化與歷史核心的必訪地標。透過下方的互動圖表，您可以快速比較主要景點的門票價格。</p>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                    <h3 class="text-xl font-semibold text-center mb-4">主要景點門票價格比較 (泰銖 THB)</h3>
+                    <div class="chart-container">
+                        <canvas id="ticketPriceChart"></canvas>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="cafes" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">慢活的藝術：曼谷咖啡館文化策展</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">曼谷的咖啡館已演變成融合設計、自然與社交的複合式空間。下圖為您分析精選咖啡館的消費水平分佈。</p>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                    <h3 class="text-xl font-semibold text-center mb-4">咖啡館消費水平分佈 (店家數量)</h3>
+                    <div class="small-chart-container">
+                        <canvas id="cafePriceChart"></canvas>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="secrets" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">旅遊書之外：發掘曼谷的隱秘聖殿</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">探索那些較少遊客踏足，卻能提供獨特城市視角的場所。這些秘境多為免費，但部分地點可能需要支付小額費用給當地管理者。</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="shopping" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">商業的殿堂：穿梭於曼谷的零售世界</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">為您繪製一幅清晰的曼谷零售地圖。從指標性商場到名牌折扣中心，滿足您所有的購物慾望。</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"></div>
+            </section>
+
+            <section id="meals" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">三餐小吃：從米其林到街頭的味覺探險</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">引領您深入曼谷的正餐與鹹點世界。從米其林星級小吃到在地口袋名單，下圖為您展示各店家的價格定位。</p>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                    <h3 class="text-xl font-semibold text-center mb-4">精選三餐小吃價格帶比較 (泰銖 THB)</h3>
+                    <div class="chart-container" style="height: 600px; max-height: 70vh;">
+                        <canvas id="foodPriceChart"></canvas>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+            
+            <section id="desserts" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">甜蜜的誘惑：曼谷必訪甜點蛋糕店</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">為您的旅程增添一抹甜蜜。從國民級的蜜糖吐司到創新的泰式風味蛋糕，這裡是滿足您第二個胃的最佳去處。</p>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                    <h3 class="text-xl font-semibold text-center mb-4">精選甜點價格帶比較 (泰銖 THB)</h3>
+                    <div class="chart-container">
+                        <canvas id="dessertPriceChart"></canvas>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="rooftop" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">璀璨的夜：高空夜景</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">從曼谷的天際線俯瞰城市燈火，感受百萬夜景的震撼。這裡為您精選了最值得一去的高空酒吧。</p>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                    <h3 class="text-xl font-semibold text-center mb-4">精選高空酒吧低消/入場費比較 (泰銖 THB)</h3>
+                    <div class="chart-container">
+                        <canvas id="rooftopPriceChart"></canvas>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="bars" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">微醺的夜：特色主題酒吧</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">探索隱藏在曼谷巷弄中的創意與驚喜。從奇幻風格到復古情懷，每一家酒吧都有自己獨特的故事。</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="markets" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">熱鬧的夜：人氣必逛夜市</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">體驗曼谷最道地的庶民活力。在夜市裡，您可以盡情品嚐街頭美食、挖掘文創小物，感受越夜越美麗的城市脈動。</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <section id="moto" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2 text-slate-800">兩輪自由：曼谷機車租賃權威指南</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">教您如何在不抵押護照的情況下，順利租到機車。下圖比較了潛力店家的預估現金押金範圍。</p>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                    <h3 class="text-xl font-semibold text-center mb-4">潛力店家預估現金押金 (泰銖 THB)</h3>
+                    <div class="chart-container">
+                        <canvas id="motoDepositChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                    <h3 class="text-xl font-semibold text-center mb-6">安全租車策略：四步驟流程</h3>
+                    <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+                        <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">①</div><h4 class="font-bold">準備文件</h4><p class="text-sm text-slate-500">備妥國際駕照(IDP)與護照影本</p></div>
+                        <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
+                        <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">②</div><h4 class="font-bold">現金為王</h4><p class="text-sm text-slate-500">準備1000-5000泰銖作為現金押金</p></div>
+                        <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
+                        <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">③</div><h4 class="font-bold">檢查存證</h4><p class="text-sm text-slate-500">仔細檢查車況並錄影拍照存證</p></div>
+                        <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
+                        <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">④</div><h4 class="font-bold">審閱合約</h4><p class="text-sm text-slate-500">確認合約內容、車號與租賃日期</p></div>
+                    </div>
+                </div>
+                <h3 class="text-xl font-semibold text-center mb-6">潛力店家線索 (可能接受現金押金)</h3>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const appData = {
+            landmarks: [
+                { name: '大皇宮 & 玉佛寺', price: 500, hours: '08:30-15:30', transport: '交通船 N9 Tha Chang', description: '泰國王室的象徵，建築藝術的巔峰之作，供奉國寶玉佛。' },
+                { name: '臥佛寺', price: 300, hours: '08:00-18:30', transport: '交通船 N8 Tha Tien', description: '擁有身長46米的宏偉臥佛像，同時是泰式按摩的發源地。' },
+                { name: '鄭王廟', price: 200, hours: '08:00-18:00', transport: '從N8碼頭渡河', description: '又稱黎明寺，高聳的主塔是昭披耶河畔最美的天際線之一。' },
+                { name: '四面佛', price: 0, hours: '06:00-22:00', transport: 'BTS Chit Lom', description: '位於市中心，香火鼎盛、有求必應的印度教神龕。祭品另計。' },
+                { name: '金山寺', price: 100, hours: '07:00-19:00', transport: '運河船 Panfa Leelard', description: '坐落於人造山丘上，是俯瞰曼谷舊城區全景的絕佳地點。' },
+                { name: '王權瑪哈納功天空步道', price: 880, hours: '10:00-19:00+', transport: 'BTS Chong Nonsi', description: '曼谷最高觀景台，體驗78樓的透明玻璃步道。價格依時段浮動。' },
+                { name: '水門寺', price: 0, hours: '08:00-18:00', transport: 'MRT Bang Phai', description: '以69米高的宏偉坐佛像與奇幻的琉璃佛塔成為新興熱點。' },
+                { name: '金佛寺', price: 40, hours: 'N/A', transport: 'MRT Hua Lamphong', description: '供奉著世界最大的5.5噸純金佛像，見證泰國佛教歷史。' },
+            ],
+            cafes: [
+                { name: 'Baan Suan Sathon', type: '植物系', priceTier: 2, description: '名副其實的「城中花園」，在瀑布與錦鯉池環繞下用餐。消費中高。', transport: '從MRT Lumphini搭計程車' },
+                { name: 'Botanist activity space', type: '植物系', priceTier: 1, description: '結合咖啡館、植物園與小型動物區的複合式目的地。門票100泰銖可抵消費。', transport: '搭乘計程車' },
+                { name: 'Ryoku Cafe', type: '植物系', priceTier: 2, description: '純白色調搭配大量綠植，以精緻的舒芙蕾鬆餅聞名。', transport: 'BTS Phrom Phong' },
+                { name: 'The Mustang Blu', type: '設計感', priceTier: 3, description: '百年舊銀行改造，復古裝潢與動物標本收藏，風格獨特。人均消費高。', transport: 'MRT Hua Lamphong' },
+                { name: 'Wallflowers Café', type: '設計感', priceTier: 2, description: '隱身於老建築中，一樓是花店，二樓是復古咖啡館，以華麗蛋糕聞名。', transport: '中國城附近' },
+                { name: 'Flat+White Café', type: '設計感', priceTier: 1, description: '極簡純白風格，懸浮式螺旋樓梯是社群焦點，提供創意咖啡。', transport: 'N/A' },
+                { name: 'Patom Organic Living', type: '植物系', priceTier: 1, description: '森林般的庭園中的玻璃屋，強調永續經營與有機食材。', transport: '搭乘計程車' },
+                { name: 'FO SHO BRO', type: '設計感', priceTier: 2, description: '以摩洛哥沙漠風情為主題，提供強烈的異國視覺體驗。', transport: 'N/A' },
+            ],
+            secrets: [
+                { name: '藝術家之屋', type: '在地生活', price: 0, description: '超過200年歷史的運河畔木屋，有免費的傳統木偶戲表演。', transport: '長尾船或計程車' },
+                { name: '暢萃文創園區', type: '創意飛地', price: 0, description: '圍繞退役運輸機而建的創意空間，充滿藝術裝置與個性小店。', transport: '搭乘計程車' },
+                { name: '飛機墳場', type: '奇觀', price: 200, description: '非官方的另類景點，廢棄飛機殘骸成為城市探險家的熱點。需付小額入場費(約200 THB)。', transport: '搭乘計程車' },
+                { name: '邦喀造 (曼谷綠肺)', type: '在地生活', price: 0, description: '市中心對岸的廣闊綠地，適合騎行穿梭於叢林小徑，體驗鄉村風光。', transport: '搭乘渡輪' },
+                { name: '陶瓷島 (Ko Kret)', type: '在地生活', price: 0, description: '以孟族社群、傳統陶器與無車的悠閒氛圍聞名的一日遊好去處。', transport: '搭乘渡輪' },
+                { name: '沙吞獨特塔 (鬼塔)', type: '奇觀', price: 0, description: '金融風暴遺留的廢棄摩天大樓，官方禁止進入，但其身影已成曼谷地標。', transport: '遠觀即可' },
+            ],
+            shopping: [
+                { name: 'Siam Paragon', type: '購物中心', description: '頂級奢華購物中心，匯集一線名牌，並設有大型水族館。', transport: 'BTS Siam' },
+                { name: 'ICONSIAM', type: '購物中心', description: '河畔宏偉地標，擁有室內水上市場與全泰首家Apple直營店。', transport: 'BTS Charoen Nakhon / 免費接駁船' },
+                { name: 'Central World', type: '購物中心', description: '世界最大的購物中心之一，品牌選擇廣泛，戶外有四面佛。', transport: 'BTS Chit Lom' },
+                { name: 'The EmQuartier & Emsphere', type: '購物中心', description: '現代化購物建築群，Emsphere更是美食不夜城，設有IKEA。', transport: 'BTS Phrom Phong' },
+                { name: 'Terminal 21 Asok', type: '購物中心', description: '以環遊世界為主題的創意商場，頂樓美食廣場性價比極高。', transport: 'BTS Asok / MRT Sukhumvit' },
+                { name: 'Chatuchak Weekend Market', type: '市集', description: '世界最大的戶外市集之一，僅在週末營業，商品應有盡有。', transport: 'BTS Mo Chit / MRT Chatuchak Park' },
+                { name: 'Siam Premium Outlets', type: 'Outlet', description: '由Siam Piwat集團與西蒙地產集團合作開發的高端Outlet，擁有眾多國際精品品牌。', transport: '從Siam Paragon搭乘接駁巴士 (150 THB)' },
+                { name: 'Central Village', type: 'Outlet', description: '由Central集團開發的大型Outlet，同樣匯集了大量國際與本土品牌。', transport: '從Central World搭乘接駁巴士 (150 THB)' },
+            ],
+            meals: [
+                { name: 'Jay Fai (痣姐)', type: '米其林', price: 1000, description: '全球唯一米其林一星街頭小吃，招牌黃金蟹肉蛋捲價格破千，需提前數月預約。' },
+                { name: 'Here Hai', type: '米其林', price: 340, description: '以鋪滿蟹肉的「巨無霸蟹肉炒飯」爆紅，榮獲必比登推薦。' },
+                { name: 'Jeh O Chula', type: '米其林', price: 250, description: '以宵夜限定的「媽媽麵酸辣海鮮鍋」聞名，米其林必比登推薦。' },
+                { name: 'P\'Aor (พี่อ้อ)', type: '米其林', price: 699, description: '以豪華的龍蝦冬蔭功麵聞名，湯頭濃郁，是必比登推薦的打卡聖地。'},
+                { name: 'Wattana Panich', type: '米其林', price: 100, description: '傳奇的牛肉麵店，使用一個數十年從未熄火的滷汁鍋，味道醇厚。必比登推薦。'},
+                { name: 'Somsak Pu Ob', type: '米其林', price: 290, description: '以粉絲焗蟹/蝦聞名的街頭老店，炭火烹調香氣十足。必比登推薦。'},
+                { name: 'Thipsamai', type: '在地三餐', price: 120, description: '被譽為泰國第一的泰式炒河粉(Pad Thai)，品質穩定，適合午餐。' },
+                { name: 'Nai Ek Roll Noodle', type: '米其林', price: 60, description: '中國城的名店，以脆皮燒肉和粿汁聞名，是體驗在地早餐的好選擇。'},
+                { name: 'Khao Gaeng Jek Pui', type: '米其林', price: 40, description: '中國城的「音樂椅咖哩飯」，沒有桌子，大家坐在小凳子上享用，極具特色。'},
+                { name: '紅大哥海南雞飯', type: '米其林', price: 60, description: '水門市場名店，身穿粉紅色制服，多年蟬聯必比登推薦，價格實惠。' },
+                { name: 'Jok Prince', type: '在地三餐', price: 50, description: '河岸區老店，其豬肉丸粥(Jok)帶有獨特的煙燻味，適合早餐。' },
+                { name: '中國城 (Yaowarat)', type: '在地三餐', price: 150, description: '街頭美食聖地，入夜後尤其熱鬧，海鮮、粿汁、甜品應有盡有，適合晚餐。' },
+                { name: 'Khao Soi Lam Duan', type: '在地三餐', price: 80, description: '想品嚐正宗的泰北咖哩麵(Khao Soi)，這家清邁老店的曼谷分店是絕佳選擇。'},
+                { name: 'Bamee Kon Sae Lee', type: '在地三餐', price: 70, description: '一家廣受好評的泰式雲吞麵店，麵條Q彈，配料豐富。'},
+            ],
+            desserts: [
+                 { name: 'After You Dessert Cafe', price: 265, description: '掀起蜜糖吐司風潮的始祖，招牌「澀谷蜜糖吐司」與各式日式刨冰(Kakigori)是必點聖品。' },
+                 { name: 'Audrey Cafe & Bistro', price: 125, description: '以其夢幻的「泰式奶茶千層蛋糕」聞名，將泰國經典飲品與法式甜點完美結合。' },
+                 { name: 'The Rolling Pinn', price: 380, description: '主打創意與視覺效果的精緻蛋糕，用料扎實，口味濃郁，適合慶祝特殊場合。' },
+                 { name: 'Kyo Roll En', price: 200, description: '專賣日式竹炭卷蛋糕與抹茶甜點，風格簡約，味道純正，提供高品質的日式甜點體驗。' },
+                 { name: 'Unbirthday Cafe', price: 180, description: '充滿少女心的韓系咖啡館，以其精美的手工客製化蛋糕和清新的裝潢風格著稱。' },
+                 { name: 'Kor Panich (高潘尼)', price: 100, description: '超過80年歷史的芒果糯米飯老字號，米其林必比登推薦，是體驗傳統泰式甜點的經典。' },
+                 { name: 'Mont Nom Sod (มนต์นมสด)', price: 30, description: '國民級的烤土司專賣店，提供多種口味的香甜抹醬，搭配濃郁鮮奶是絕配。' },
+                 { name: 'Pang Cha', price: 335, description: '以其巨無霸「泰式奶茶刨冰」榮獲米其林推薦，份量驚人，茶味濃郁，適合多人分享。' },
+            ],
+            rooftop: [
+                { name: 'Mahanakhon SkyBar', price: 880, description: '位於王權瑪哈納功大樓76-77樓，泰國最高的餐廳與酒吧，需購買觀景台門票入場。', transport: 'BTS Chong Nonsi' },
+                { name: 'Vertigo and Moon Bar', price: 500, description: '位於Banyan Tree飯店61樓，船型設計提供無遮蔽的360度城市景觀，是經典中的經典。低消約一杯飲品。', transport: 'MRT Lumphini' },
+                { name: 'Sky Bar - Lebua', price: 800, description: '電影《醉後大丈夫2》拍攝地，以其標誌性的圓形吧台聞名，但規定較嚴格，消費也偏高。', transport: 'BTS Saphan Taksin' },
+                { name: 'Red Sky Bar', price: 450, description: '位於Central World頂樓，交通便利，擁有會變色的拱門地標，視野開闊。', transport: 'BTS Chit Lom' },
+                { name: 'Octave Rooftop Lounge', price: 500, description: '位於曼谷素坤逸萬豪酒店頂樓，提供真正的360度全景，氛圍比傳統高空酒吧更輕鬆。', transport: 'BTS Thong Lo' },
+            ],
+            bars: [
+                { name: 'The Iron Fairies', price: 400, description: '奇幻的工業風裝潢，彷彿進入精靈的魔幻工廠，提供現場爵士樂表演。', transport: 'BTS Thong Lo' },
+                { name: 'Tichuca Rooftop Bar', price: 400, description: '以巨大的水母燈光裝置爆紅，充滿奇幻的阿凡達風格，是社群媒體上的熱門打卡點。', transport: 'BTS Thong Lo' },
+                { name: 'Teens of Thailand', price: 400, description: '隱身於中國城老屋中，是曼谷琴酒(Gin)文化的先驅之一，酒單充滿創意。', transport: 'MRT Hua Lamphong' },
+                { name: 'Havana Social', price: 400, description: '古巴主題的隱藏式酒吧，需透過巷弄中的電話亭進入，充滿革命時期的浪漫情懷。', transport: 'BTS Nana' },
+            ],
+            markets: [
+                { name: 'Jodd Fairs 火車夜市', price: 100, description: '新一代火車夜市，交通便利，以美食、文創商品和火山排骨聞名。', transport: 'MRT Phra Ram 9' },
+                { name: 'Asiatique 河濱碼頭夜市', price: 0, description: '結合購物與觀光的河畔夜市，擁有巨大的摩天輪地標，氣氛悠閒。', transport: 'BTS Saphan Taksin轉乘免費接駁船' },
+                { name: 'The One Ratchada', price: 150, description: '原拉差達火車夜市回歸，維持彩色帳篷的標誌性景觀，美食眾多，交通便利。', transport: 'MRT Thailand Cultural Centre' },
+                { name: 'Srinakarin Train Night Market', price: 150, description: '規模龐大的復古主題夜市，擁有大量古董車和二手商品，是尋寶的好去處，但距離市中心較遠。', transport: '計程車或Grab' },
+            ],
+            moto: [
+                { name: 'BSR Bike Shop', deposit: 2000, description: '網站明確列出現金押金制度(速克達2000泰銖)，是極具潛力的首選。' },
+                { name: 'Big Bike Rental', deposit: 10000, description: '主要針對大型重機，評論顯示接受高額現金押金(10000+)。' },
+                { name: 'Ploy Hostel', deposit: 3000, description: '考山路附近的旅館，可透過住宿資源租車，押金可能較靈活(預估3000)。' },
+                { name: '"Patoy"', deposit: 2500, description: '網路論壇強力推薦的店家，據稱不要求押護照且價格公道(預估2500)。' },
+                { name: 'Fatboy\'s Motorbikes', deposit: 3000, description: '網路社群中被提及的信譽店家，可納入探詢名單(預估3000)。' },
+            ]
+        };
+
+        function createCard(item, category) {
+            let details = '';
+            let footer = '';
+            switch (category) {
+                case 'landmarks':
+                    details = `<p class="text-sm text-slate-500">價格: ${item.price > 0 ? item.price + ' THB' : '免費'}</p>
+                               <p class="text-sm text-slate-500">時間: ${item.hours}</p>
+                               <p class="text-sm text-slate-500">交通: ${item.transport}</p>`;
+                    break;
+                case 'cafes':
+                     const priceSymbols = '฿'.repeat(item.priceTier);
+                     details = `<p class="text-sm text-slate-500">消費: <span class="font-semibold text-teal-600">${priceSymbols}</span></p>
+                                <p class="text-sm text-slate-500">交通: ${item.transport}</p>`;
+                    break;
+                case 'secrets':
+                     details = `<p class="text-sm text-slate-500">價格: <span class="font-semibold">${item.price > 0 ? item.price + ' THB' : '免費'}</span></p>
+                                <p class="text-sm text-slate-500">交通: ${item.transport}</p>`;
+                    break;
+                case 'shopping':
+                    details = `<p class="text-sm text-slate-500">交通: ${item.transport}</p>`;
+                    if (item.type === 'Outlet') {
+                        footer = `<div class="bg-amber-100 p-2 text-center mt-4">
+                                      <span class="font-bold text-amber-700 text-sm">名牌折扣 (Outlet)</span>
+                                  </div>`;
+                    }
+                    break;
+                case 'meals':
+                    details = `<p class="text-sm text-slate-500">類型: <span class="font-semibold text-red-600">${item.type}</span></p>
+                               <p class="text-sm text-slate-500">起價約: <span class="font-semibold">${item.price} THB</span></p>`;
+                    break;
+                case 'desserts':
+                    details = `<p class="text-sm text-slate-500">招牌起價約: <span class="font-semibold">${item.price} THB</span></p>`;
+                    break;
+                case 'rooftop':
+                case 'bars':
+                case 'markets':
+                    details = `<p class="text-sm text-slate-500">低消/入場約: <span class="font-semibold">${item.price > 0 ? item.price + ' THB' : '無特定'}</span></p>
+                               <p class="text-sm text-slate-500">交通: ${item.transport}</p>`;
+                    break;
+                case 'moto':
+                    details = `<p class="text-sm text-slate-500">預估押金: <span class="font-semibold">${item.deposit} THB</span></p>`;
+                    break;
+            }
+
+            return `
+                <div class="card">
+                    <div class="p-6 card-content">
+                        <h3 class="text-lg font-bold mb-2 text-slate-800">${item.name}</h3>
+                        <p class="text-slate-600 text-sm mb-4">${item.description}</p>
+                        <div class="space-y-1">${details}</div>
+                    </div>
+                    ${footer}
+                </div>
+            `;
+        }
+        
+        function renderContent() {
+            document.querySelector('#landmarks .grid').innerHTML = appData.landmarks.map(item => createCard(item, 'landmarks')).join('');
+            document.querySelector('#cafes .grid').innerHTML = appData.cafes.map(item => createCard(item, 'cafes')).join('');
+            document.querySelector('#secrets .grid').innerHTML = appData.secrets.map(item => createCard(item, 'secrets')).join('');
+            document.querySelector('#shopping .grid').innerHTML = appData.shopping.map(item => createCard(item, 'shopping')).join('');
+            document.querySelector('#meals .grid').innerHTML = appData.meals.map(item => createCard(item, 'meals')).join('');
+            document.querySelector('#desserts .grid').innerHTML = appData.desserts.map(item => createCard(item, 'desserts')).join('');
+            document.querySelector('#rooftop .grid').innerHTML = appData.rooftop.map(item => createCard(item, 'rooftop')).join('');
+            document.querySelector('#bars .grid').innerHTML = appData.bars.map(item => createCard(item, 'bars')).join('');
+            document.querySelector('#markets .grid').innerHTML = appData.markets.map(item => createCard(item, 'markets')).join('');
+            document.querySelector('#moto .grid').innerHTML = appData.moto.map(item => createCard(item, 'moto')).join('');
+        }
+        
+        function setupCharts() {
+            const chartDefaultOptions = {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, title: { display: true, font: { size: 14 } } } }
+            };
+            
+            const barColor = 'rgba(13, 148, 136, 0.6)';
+            const borderColor = 'rgba(13, 148, 136, 1)';
+
+            // Landmarks Chart
+            const ticketCtx = document.getElementById('ticketPriceChart').getContext('2d');
+            const ticketData = appData.landmarks.filter(item => item.price > 0);
+            new Chart(ticketCtx, {
+                type: 'bar',
+                data: {
+                    labels: ticketData.map(item => item.name),
+                    datasets: [{ label: '門票價格 (THB)', data: ticketData.map(item => item.price), backgroundColor: barColor, borderColor: borderColor, borderWidth: 1 }]
+                },
+                options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '價格 (THB)' } } } }
+            });
+
+            // Cafe Price Chart
+            const cafeCtx = document.getElementById('cafePriceChart').getContext('2d');
+            const cafePriceTiers = appData.cafes.reduce((acc, cafe) => {
+                acc[cafe.priceTier-1] = (acc[cafe.priceTier-1] || 0) + 1;
+                return acc;
+            }, [0,0,0]);
+            new Chart(cafeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['平價 (฿)', '中價 (฿฿)', '高價 (฿฿฿)'],
+                    datasets: [{ label: '店家數量', data: cafePriceTiers, backgroundColor: barColor, borderColor: borderColor, borderWidth: 1 }]
+                },
+                options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '店家數量' } } } }
+            });
+            
+            // Meals Price Chart
+            const foodCtx = document.getElementById('foodPriceChart').getContext('2d');
+            const sortedFood = [...appData.meals].sort((a,b) => a.price - b.price);
+            new Chart(foodCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedFood.map(f => f.name),
+                    datasets: [{ label: '起價約 (THB)', data: sortedFood.map(f => f.price), backgroundColor: 'rgba(219, 58, 58, 0.6)', borderColor: 'rgba(185, 28, 28, 1)', borderWidth: 1 }]
+                },
+                 options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '價格 (THB)' } } } }
+            });
+            
+            // Desserts Price Chart
+            const dessertCtx = document.getElementById('dessertPriceChart').getContext('2d');
+            const sortedDesserts = [...appData.desserts].sort((a,b) => a.price - b.price);
+            new Chart(dessertCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedDesserts.map(d => d.name),
+                    datasets: [{ label: '招牌起價約 (THB)', data: sortedDesserts.map(d => d.price), backgroundColor: 'rgba(234, 179, 8, 0.6)', borderColor: 'rgba(202, 138, 4, 1)', borderWidth: 1 }]
+                },
+                 options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '價格 (THB)' } } } }
+            });
+
+            // Rooftop Price Chart
+            const rooftopCtx = document.getElementById('rooftopPriceChart').getContext('2d');
+            const sortedRooftop = [...appData.rooftop].sort((a,b) => a.price - b.price);
+            new Chart(rooftopCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedRooftop.map(n => n.name),
+                    datasets: [{ label: '低消/入場約 (THB)', data: sortedRooftop.map(n => n.price), backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(67, 56, 202, 1)', borderWidth: 1 }]
+                },
+                 options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '價格 (THB)' } } } }
+            });
+
+            // Moto Deposit Chart
+            const motoCtx = document.getElementById('motoDepositChart').getContext('2d');
+            new Chart(motoCtx, {
+                type: 'bar',
+                data: {
+                    labels: appData.moto.map(m => m.name),
+                    datasets: [{ label: '預估押金 (THB)', data: appData.moto.map(m => m.deposit), backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 1 }]
+                },
+                options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '押金 (THB)' } } } }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.addEventListener('mouseenter', () => {
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.classList.add('sidebar-expanded');
+            });
+            sidebar.addEventListener('mouseleave', () => {
+                sidebar.classList.remove('sidebar-expanded');
+                sidebar.classList.add('sidebar-collapsed');
+            });
+
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+
+                    navButtons.forEach(btn => {
+                        if (btn.dataset.target === targetId) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetId) {
+                            section.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            renderContent();
+            setupCharts();
+        });
+    </script>
+</body>
+</html>
+
