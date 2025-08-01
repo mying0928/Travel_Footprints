@@ -104,7 +104,12 @@
         const travelData = {
             "泰國": {
                 img: "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2070&auto=format&fit=crop",
-                cities: { "曼谷": { img: "https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" } }
+                cities: { 
+                    "曼谷": { 
+                        img: "https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        url: "Thailand/Bangkok/index.html" 
+                    } 
+                }
             },
             "越南": {
                 img: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070&auto=format&fit=crop",
@@ -239,7 +244,7 @@
                 newSubTitleText = `精彩的旅程即將展開`;
                 backButton.classList.remove('hidden');
                 backButton.classList.add('opacity-100');
-                newBgUrl = travelData[selectedCountry].img;
+                newBgUrl = travelData[selectedCountry].cities[selectedCity].img; // Use city image for final page
             }
             
             changeBackground(newBgUrl);
@@ -277,7 +282,15 @@
         // 顯示最終連結
         function displayFinalLink(country, city) {
             document.getElementById('final-destination').textContent = city;
-            document.getElementById('final-link').href = 'index.html'; 
+            const finalLink = document.getElementById('final-link');
+            const cityData = travelData[country].cities[city];
+
+            if (cityData && cityData.url) {
+                const bgImageUrl = travelData[country].cities[city].img;
+                finalLink.href = `${cityData.url}?bg=${encodeURIComponent(bgImageUrl)}`;
+            } else {
+                finalLink.href = 'index.html'; // Fallback
+            }
         }
 
         // 返回按鈕事件
@@ -299,4 +312,3 @@
     </script>
 </body>
 </html>
-
