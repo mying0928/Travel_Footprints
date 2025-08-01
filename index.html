@@ -164,7 +164,8 @@
         // 動態生成卡片
         function createCard(name, type, imageUrl) {
             const card = document.createElement('div');
-            card.className = `card bg-cover bg-center rounded-xl shadow-2xl cursor-pointer h-48 flex items-end p-4 group relative overflow-hidden transition-transform duration-300 hover:scale-105`;
+            // 將固定的 h-48 替換為 aspect-[4/3]，以確保所有卡片都有相同的4:3長寬比
+            card.className = `card bg-cover bg-center rounded-xl shadow-2xl cursor-pointer aspect-[4/3] flex items-end p-4 group relative overflow-hidden transition-transform duration-300 hover:scale-105`;
             card.style.backgroundImage = `url(${imageUrl})`;
             card.dataset.name = name;
             card.dataset.type = type;
