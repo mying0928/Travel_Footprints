@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅行足跡 - 選擇您的目的地</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        /* 背景圖片容器 */
+        .bg-image-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: opacity 0.8s ease-in-out; 
+        }
+        #bg-image-1 {
+            z-index: -2;
+        }
+        #bg-image-2 {
+            z-index: -1;
+            opacity: 0;
+        }
+        .bg-image-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        
+        /* 標題動畫 */
+        #main-title, #sub-title {
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .card-container.hidden {
+            display: none;
+        }
+
+        .card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <div id="bg-image-1" class="bg-image-container" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop');"></div>
+    <div id="bg-image-2" class="bg-image-container"></div>
+
+    <div id="main-container" class="min-h-screen flex flex-col items-center justify-start pt-24 md:pt-32 px-4 pb-12">
+        
+        <div class="text-center mb-8">
+            <h1 id="main-title" class="text-4xl md:text-5xl font-bold tracking-wider text-shadow-lg">探索世界</h1>
+            <p id="sub-title" class="text-lg md:text-xl mt-2 text-gray-200">從選擇一個國家開始您的旅程</p>
+        </div>
+
+        <div id="selection-container" class="w-full max-w-4xl">
+            <div id="country-selection" class="card-container">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+            <div id="city-selection" class="card-container hidden">
+                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+            <div id="final-link-container" class="card-container hidden">
+                 <div class="card bg-white/10 backdrop-blur-md rounded-xl p-8 text-center shadow-2xl max-w-md mx-auto">
+                    <h2 id="final-destination" class="text-3xl font-bold mb-4"></h2>
+                    <p class="text-gray-300 mb-6">您已準備好前往下一個目的地。</p>
+                    <a id="final-link" href="#" class="inline-block bg-teal-500 hover:bg-teal-400 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105">
+                        開始探索
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-12 h-10">
+            <button id="back-button" class="hidden opacity-0 transition-opacity duration-300 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg">
+                &larr; 返回
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // 資料結構
+        const travelData = {
+            "泰國": {
+                img: "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2070&auto=format&fit=crop",
+                cities: { "曼谷": { img: "https://images.unsplash.com/photo-1539040292042-81c53e548553?q=80&w=2070&auto=format&fit=crop" } }
+            },
+            "越南": {
+                img: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070&auto=format&fit=crop",
+                cities: { "富國島": { img: "https://images.unsplash.com/photo-1629573494435-75839356a49f?q=80&w=2070&auto=format&fit=crop" } }
+            },
+            "日本": {
+                img: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=2070&auto=format&fit=crop",
+                cities: {
+                    "大阪": { img: "https://images.unsplash.com/photo-1577985132903-55e7543881b2?q=80&w=1974&auto=format&fit=crop" },
+                    "京都": { img: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?q=80&w=2070&auto=format&fit=crop" },
+                    "奈良": { img: "https://images.unsplash.com/photo-1589709112838-f88f3a359159?q=80&w=2070&auto=format&fit=crop" }
+                }
+            }
+        };
+
+        // DOM 元素
+        const mainTitle = document.getElementById('main-title');
+        const subTitle = document.getElementById('sub-title');
+        const countrySelection = document.getElementById('country-selection');
+        const citySelection = document.getElementById('city-selection');
+        const finalLinkContainer = document.getElementById('final-link-container');
+        const backButton = document.getElementById('back-button');
+        const bgImage1 = document.getElementById('bg-image-1');
+        const bgImage2 = document.getElementById('bg-image-2');
+        let isBg1Active = true;
+
+        // 狀態管理
+        let currentState = 'country';
+        let selectedCountry = null;
+        let selectedCity = null;
+
+        // 背景切換函式
+        function changeBackground(newUrl) {
+            if (isBg1Active) {
+                bgImage2.style.backgroundImage = `url(${newUrl})`;
+                bgImage2.style.opacity = 1;
+            } else {
+                bgImage1.style.backgroundImage = `url(${newUrl})`;
+                bgImage2.style.opacity = 0;
+            }
+            isBg1Active = !isBg1Active;
+        }
+
+        // 動態生成卡片
+        function createCard(name, type, imageUrl) {
+            const card = document.createElement('div');
+            card.className = `card bg-cover bg-center rounded-xl shadow-2xl cursor-pointer h-48 flex items-end p-4 group relative overflow-hidden transition-transform duration-300 hover:scale-105`;
+            card.style.backgroundImage = `url(${imageUrl})`;
+            card.dataset.name = name;
+            card.dataset.type = type;
+            const overlay = document.createElement('div');
+            overlay.className = 'absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition-all duration-300';
+            const text = document.createElement('h3');
+            text.className = 'text-2xl font-bold z-10 relative';
+            text.textContent = name;
+            card.appendChild(overlay);
+            card.appendChild(text);
+            card.addEventListener('click', () => handleSelection(name, type));
+            return card;
+        }
+
+        // 處理選擇事件
+        function handleSelection(name, type) {
+            if (type === 'country') {
+                selectedCountry = name;
+                updateView('city');
+            } else if (type === 'city') {
+                selectedCity = name;
+                updateView('final');
+            }
+        }
+
+        // 動畫函數：讓卡片有層次地出現
+        function animateCardsIn(container) {
+            const cards = container.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('visible');
+                }, index * 100);
+            });
+        }
+
+        // 動畫函數：讓卡片淡出
+        function animateCardsOut(container) {
+            const cards = container.querySelectorAll('.card.visible');
+            cards.forEach(card => card.classList.remove('visible'));
+        }
+
+        // 更新視圖的總函數
+        async function updateView(newState) {
+            const currentView = document.getElementById(currentState === 'final' ? 'final-link-container' : `${currentState}-selection`);
+            
+            // 1. 同時淡出標題和卡片
+            mainTitle.style.opacity = 0;
+            subTitle.style.opacity = 0;
+            animateCardsOut(currentView);
+
+            // 2. 等待淡出動畫結束
+            await new Promise(resolve => setTimeout(resolve, 500));
+            currentView.classList.add('hidden');
+
+            // 3. 更新狀態、內容和背景
+            currentState = newState;
+            let newView;
+            let newBgUrl;
+            let newTitleText, newSubTitleText;
+
+            if (newState === 'country') {
+                newView = countrySelection;
+                newTitleText = "探索世界";
+                newSubTitleText = "從選擇一個國家開始您的旅程";
+                backButton.classList.add('hidden');
+                backButton.classList.remove('opacity-100');
+                newBgUrl = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop';
+            } else if (newState === 'city') {
+                newView = citySelection;
+                displayCities(selectedCountry);
+                newTitleText = selectedCountry;
+                newSubTitleText = "選擇您想探索的城市";
+                backButton.classList.remove('hidden');
+                backButton.classList.add('opacity-100');
+                newBgUrl = travelData[selectedCountry].img;
+            } else if (newState === 'final') {
+                newView = finalLinkContainer;
+                displayFinalLink(selectedCountry, selectedCity);
+                newTitleText = selectedCity;
+                newSubTitleText = `精彩的旅程即將展開`;
+                backButton.classList.remove('hidden');
+                backButton.classList.add('opacity-100');
+                newBgUrl = travelData[selectedCountry].img;
+            }
+            
+            // 4. 切換背景
+            changeBackground(newBgUrl);
+
+            // 5. 更新文字並淡入標題
+            mainTitle.textContent = newTitleText;
+            subTitle.textContent = newSubTitleText;
+            mainTitle.style.opacity = 1;
+            subTitle.style.opacity = 1;
+            
+            // 6. 顯示新的視圖容器，並觸發卡片進場動畫
+            if(newView) {
+                newView.classList.remove('hidden');
+                requestAnimationFrame(() => animateCardsIn(newView));
+            }
+        }
+
+        // 顯示國家
+        function displayCountries() {
+            const container = countrySelection.querySelector('.grid');
+            container.innerHTML = '';
+            for (const country in travelData) {
+                container.appendChild(createCard(country, 'country', travelData[country].img));
+            }
+        }
+
+        // 顯示城市
+        function displayCities(country) {
+            const cities = travelData[country].cities;
+            const container = citySelection.querySelector('.grid');
+            container.innerHTML = '';
+            for (const city in cities) {
+                container.appendChild(createCard(city, 'city', cities[city].img));
+            }
+        }
+
+        // 顯示最終連結
+        function displayFinalLink(country, city) {
+            document.getElementById('final-destination').textContent = city;
+            document.getElementById('final-link').href = 'index.html'; 
+        }
+
+        // 返回按鈕事件
+        backButton.addEventListener('click', () => {
+            if (currentState === 'final') {
+                updateView('city');
+            } else if (currentState === 'city') {
+                selectedCity = null;
+                updateView('country');
+            }
+        });
+
+        // 初始化頁面
+        window.onload = () => {
+            displayCountries();
+            animateCardsIn(countrySelection);
+        };
+
+    </script>
+</body>
+</html>
+
