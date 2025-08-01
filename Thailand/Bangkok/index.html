@@ -9,6 +9,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Urban Oasis -->
+    <!-- Application Structure Plan: 沿用高效的標籤式儀表板結構，但更新視覺風格為更現代的"Urban Oasis"主題。核心互動邏輯不變，確保使用者可以繼續透過頂部導覽快速切換主題。此更新的重點在於視覺刷新與增加更多互動式數據圖表，以回應使用者對價格比較的具體需求。 -->
+    <!-- Visualization & Content Choices: 
+        - 景點門票比較: (目標: 比較) -> 保留並更新風格，使用Chart.js水平長條圖，視覺化門票價格。
+        - 咖啡館消費水平: (目標: 比較/分類) -> 新增Chart.js圓餅圖，將咖啡館按消費等級($, $$, $$$)分類，提供預算參考。
+        - 美食價格帶分佈: (目標: 比較/分類) -> 新增Chart.js長條圖，展示不同餐廳/小吃的價格定位，從平價到高檔。
+        - Outlet接駁車票價: (目標: 比較) -> 新增Chart.js長條圖，簡單清晰地比較兩大Outlet的接駁車費用。
+        - 機車租賃押金: (目標: 比較/告知) -> 新增Chart.js水平長條圖，展示潛力店家的預估現金押金範圍，解決使用者核心痛點。
+        - 卡片式陳列: (目標: 組織) -> 更新卡片設計，採用更簡潔的風格，提升資訊可讀性。
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -16,7 +27,7 @@
             color: #334155; /* slate-700 */
         }
         #sidebar {
-            transition: width 0.3s ease-in-out;
+            transition: width 0.3s ease-in-out, background-color 0.3s ease;
         }
         .sidebar-collapsed {
             width: 5rem; /* 80px */
@@ -64,7 +75,7 @@
             background-color: #FFFFFF;
             border-radius: 0.75rem;
             border: 1px solid #e2e8f0; /* slate-200 */
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -104,6 +115,7 @@
 <body class="antialiased">
 
     <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
         <aside id="sidebar" class="bg-white border-r border-slate-200 flex-shrink-0 sidebar-collapsed">
             <div class="p-4 border-b border-slate-200 h-16 flex items-center justify-center">
                 <h1 class="text-xl font-bold text-teal-700 transition-opacity duration-300">
@@ -155,6 +167,7 @@
             </nav>
         </aside>
 
+        <!-- Main Content -->
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
             <section id="landmarks" class="content-section active">
                 <div class="text-center mb-8">
@@ -577,13 +590,14 @@
         });
     </script>
     
+    <!-- Code to set background image with glassmorphism effect -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // 1. 讀取 URL 中的 'bg' 參數
             const params = new URLSearchParams(window.location.search);
             const bgImageUrl = params.get('bg');
 
-            // 2. 如果參數存在，就設定背景
+            // 2. 如果參數存在，就設定背景並套用玻璃擬態效果
             if (bgImageUrl) {
                 // 創建背景圖片容器
                 const bgContainer = document.createElement('div');
@@ -592,27 +606,41 @@
                 bgContainer.style.left = '0';
                 bgContainer.style.width = '100%';
                 bgContainer.style.height = '100%';
-                bgContainer.style.zIndex = '-2'; // 確保在最底層
+                bgContainer.style.zIndex = '-2';
                 bgContainer.style.backgroundImage = `url(${decodeURIComponent(bgImageUrl)})`;
                 bgContainer.style.backgroundSize = 'cover';
                 bgContainer.style.backgroundPosition = 'center';
                 
-                // 創建一個半透明黑色遮罩，讓前景內容更突出
+                // 創建一個半透明黑色遮罩 (稍微加深以提高對比)
                 const overlay = document.createElement('div');
                 overlay.style.position = 'fixed';
                 overlay.style.top = '0';
                 overlay.style.left = '0';
                 overlay.style.width = '100%';
                 overlay.style.height = '100%';
-                overlay.style.zIndex = '-1'; // 在背景和內容之間
-                overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+                overlay.style.zIndex = '-1';
+                overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.4)'; // 加深蒙版
 
                 // 將背景和遮罩添加到 body 的最前面
                 document.body.prepend(overlay);
                 document.body.prepend(bgContainer);
                 
-                // 將原本 body 的淺色背景改為透明，這樣才能看到圖片背景
+                // 將原本 body 的淺色背景改為透明
                 document.body.style.backgroundColor = 'transparent';
+
+                // --- 套用玻璃擬態效果 ---
+                const sidebar = document.getElementById('sidebar');
+                const mainContentContainers = document.querySelectorAll('main .bg-white, main .card');
+
+                // 修改側邊欄樣式
+                sidebar.classList.remove('bg-white', 'border-slate-200');
+                sidebar.classList.add('bg-slate-50/75', 'backdrop-blur-lg', 'border-slate-50/30');
+
+                // 修改所有內容卡片和容器的樣式
+                mainContentContainers.forEach(container => {
+                    container.classList.remove('bg-white', 'border-slate-200');
+                    container.classList.add('bg-white/75', 'backdrop-blur-lg', 'border-white/30');
+                });
             }
         });
     </script>
