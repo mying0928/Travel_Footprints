@@ -28,7 +28,7 @@
             height: 100vh;
             background-color: #020617; /* slate-950 */
             z-index: 9999;
-            opacity: 1; /* 預設為可見 */
+            opacity: 1;
             pointer-events: auto;
             transition: opacity 0.3s ease-in-out;
         }
@@ -84,18 +84,20 @@
             animation: bounce-arrow 2s infinite;
         }
         
+        /* 修正：使用 Grid 佈局 */
         #dashboard-content {
-            position: relative;
+            display: grid;
+            /* 初始為收合狀態的寬度 */
+            grid-template-columns: 5rem 1fr; 
+            transition: grid-template-columns 0.3s ease-in-out;
+        }
+        /* 當側邊欄展開時，改變 Grid 佈局 */
+        #dashboard-content.expanded {
+            grid-template-columns: 16rem 1fr;
         }
 
         #sidebar {
             transition: width 0.3s ease-in-out;
-        }
-        .sidebar-collapsed {
-            width: 5rem;
-        }
-        .sidebar-expanded {
-            width: 16rem;
         }
         .nav-btn {
             display: flex;
@@ -121,10 +123,11 @@
         .nav-text {
             transition: opacity 0.3s ease-in-out;
         }
-        .sidebar-collapsed .nav-text {
+        /* 根據父層容器的 class 來決定文字是否顯示 */
+        #dashboard-content:not(.expanded) .nav-text {
             opacity: 0;
         }
-        .sidebar-expanded .nav-text {
+        #dashboard-content.expanded .nav-text {
             opacity: 1;
         }
         .content-section {
@@ -201,18 +204,17 @@
         </a>
     </header>
 
-    <div id="dashboard-content" class="flex min-h-screen relative">
-        <div class="absolute top-24 left-0 right-0 h-px bg-slate-200 z-10"></div>
-
-        <aside id="sidebar" class="bg-white border-r border-slate-200 flex-shrink-0 sidebar-collapsed">
-            <div class="h-24 p-2 flex flex-col items-center justify-center space-y-2">
+    <div id="dashboard-content">
+        <aside id="sidebar" class="bg-white border-r border-slate-200 flex-shrink-0">
+            <div class="h-24 p-2 flex flex-col items-center justify-center space-y-2 border-b border-slate-200">
                  <a href="../../index.html" title="返回世界地圖" class="nav-btn !p-1 !border-0 justify-center">
                     <span class="text-2xl">🌍</span>
                     <span class="text-sm nav-text">返回世界地圖</span>
                 </a>
                 <h1 class="text-xl font-bold text-teal-700 transition-opacity duration-300 text-center">
-                    <span class="sidebar-expanded:hidden">BKK</span>
-                    <span class="hidden sidebar-expanded:inline">曼谷探索指南</span>
+                    <!-- 修正：根據父層 class 決定顯示哪個標題 -->
+                    <span id="sidebar-title-short">BKK</span>
+                    <span id="sidebar-title-full" class="hidden">曼谷探索指南</span>
                 </h1>
             </div>
             <nav class="flex flex-col mt-4">
@@ -259,7 +261,7 @@
             </nav>
         </aside>
 
-        <main class="flex-1 overflow-y-auto pt-24">
+        <main class="flex-1 overflow-y-auto bg-white border-t border-slate-200">
             <div class="p-4 md:p-8">
                 <section id="landmarks" class="content-section active">
                     <div class="text-center mb-8">
@@ -635,14 +637,20 @@
             const transitionOverlay = document.getElementById('page-transition-overlay');
             transitionOverlay.classList.add('fade-in');
 
+            const dashboardContent = document.getElementById('dashboard-content');
             const sidebar = document.getElementById('sidebar');
+            const sidebarTitleShort = document.getElementById('sidebar-title-short');
+            const sidebarTitleFull = document.getElementById('sidebar-title-full');
+            
             sidebar.addEventListener('mouseenter', () => {
-                sidebar.classList.remove('sidebar-collapsed');
-                sidebar.classList.add('sidebar-expanded');
+                dashboardContent.classList.add('expanded');
+                sidebarTitleShort.classList.add('hidden');
+                sidebarTitleFull.classList.remove('hidden');
             });
             sidebar.addEventListener('mouseleave', () => {
-                sidebar.classList.remove('sidebar-expanded');
-                sidebar.classList.add('sidebar-collapsed');
+                dashboardContent.classList.remove('expanded');
+                sidebarTitleShort.classList.remove('hidden');
+                sidebarTitleFull.classList.add('hidden');
             });
 
             const navButtons = document.querySelectorAll('.nav-btn');
