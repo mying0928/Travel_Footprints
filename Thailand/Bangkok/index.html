@@ -19,6 +19,24 @@
             color: #334155; /* slate-700 */
         }
 
+        /* --- 轉場動畫遮罩 --- */
+        #page-transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #020617; /* slate-950 */
+            z-index: 9999;
+            opacity: 1; /* 預設為可見 */
+            pointer-events: auto;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #page-transition-overlay.fade-in {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
         /* --- Hero Section 歡迎橫幅 --- */
         @keyframes ken-burns-zoom {
             0% { transform: scale(1); }
@@ -30,7 +48,7 @@
             60% { transform: translateY(-10px); }
         }
         .hero-section {
-            height: 100vh;
+            height: 70vh;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -65,16 +83,19 @@
             bottom: 2rem;
             animation: bounce-arrow 2s infinite;
         }
-        /* ------------------------------------ */
+        
+        #dashboard-content {
+            position: relative;
+        }
 
         #sidebar {
             transition: width 0.3s ease-in-out;
         }
         .sidebar-collapsed {
-            width: 5rem; /* 80px */
+            width: 5rem;
         }
         .sidebar-expanded {
-            width: 16rem; /* 256px */
+            width: 16rem;
         }
         .nav-btn {
             display: flex;
@@ -82,19 +103,19 @@
             width: 100%;
             padding: 0.75rem 1.5rem;
             border-left: 4px solid transparent;
-            color: #475569; /* slate-600 */
+            color: #475569;
             transition: all 0.2s ease-in-out;
             overflow: hidden;
             white-space: nowrap;
         }
         .nav-btn:hover {
-            background-color: #f1f5f9; /* slate-100 */
-            color: #1e293b; /* slate-800 */
+            background-color: #f1f5f9;
+            color: #1e293b;
         }
         .nav-btn.active {
-            background-color: #ccfbf1; /* teal-100 */
-            border-left-color: #0d9488; /* teal-600 */
-            color: #0f766e; /* teal-700 */
+            background-color: #ccfbf1;
+            border-left-color: #0d9488;
+            color: #0f766e;
             font-weight: 600;
         }
         .nav-text {
@@ -115,7 +136,7 @@
         .card {
             background-color: #FFFFFF;
             border-radius: 0.75rem;
-            border: 1px solid #e2e8f0; /* slate-200 */
+            border: 1px solid #e2e8f0;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             overflow: hidden;
             display: flex;
@@ -151,14 +172,28 @@
                 height: 500px;
             }
         }
+
+        #back-to-top {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        #back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="antialiased">
 
-    <header class="hero-section">
+    <div id="page-transition-overlay"></div>
+
+    <header id="page-top" class="hero-section">
         <div class="hero-bg" style="background-image: url('https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
-        <h1 class="text-5xl md:text-7xl font-bold tracking-wider text-shadow-lg">曼谷</h1>
-        <p class="text-lg md:text-xl mt-4 text-gray-200 max-w-2xl">天使之城，一個融合古老傳統與現代活力的感官盛宴。</p>
+        <h1 class="text-5xl md:text-6xl font-bold tracking-wider text-shadow-lg">曼谷</h1>
+        <p class="text-lg mt-4 text-gray-200 max-w-2xl">天使之城，一個融合古老傳統與現代活力的感官盛宴。</p>
         <a href="#dashboard-content" class="scroll-down-arrow">
             <svg class="w-8 h-8 text-white" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
                 <path d="M19 9l-7 7-7-7"></path>
@@ -167,7 +202,6 @@
     </header>
 
     <div id="dashboard-content" class="flex min-h-screen relative">
-        <!-- 修正：這條獨立的線將永遠保持水平 -->
         <div class="absolute top-24 left-0 right-0 h-px bg-slate-200 z-10"></div>
 
         <aside id="sidebar" class="bg-white border-r border-slate-200 flex-shrink-0 sidebar-collapsed">
@@ -225,9 +259,7 @@
             </nav>
         </aside>
 
-        <!-- 修正：移除 flex-col，並直接在 main 元素上設定 padding-top -->
         <main class="flex-1 overflow-y-auto pt-24">
-            <!-- 修正：移除 h-24 的空白佔位 div -->
             <div class="p-4 md:p-8">
                 <section id="landmarks" class="content-section active">
                     <div class="text-center mb-8">
@@ -360,6 +392,10 @@
             </div>
         </main>
     </div>
+
+    <a href="#page-top" id="back-to-top" class="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full bg-teal-600/80 hover:bg-teal-600 text-white shadow-lg flex items-center justify-center backdrop-blur-sm">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+    </a>
 
     <script>
         const appData = {
@@ -596,6 +632,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const transitionOverlay = document.getElementById('page-transition-overlay');
+            transitionOverlay.classList.add('fade-in');
+
             const sidebar = document.getElementById('sidebar');
             sidebar.addEventListener('mouseenter', () => {
                 sidebar.classList.remove('sidebar-collapsed');
@@ -612,7 +651,7 @@
             navButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const targetId = button.dataset.target;
-                    if (!targetId) return; // 防止點擊返回按鈕時出錯
+                    if (!targetId) return;
                     navButtons.forEach(btn => {
                         if (btn.dataset.target) btn.classList.remove('active');
                     });
@@ -628,6 +667,17 @@
             
             renderContent();
             setupCharts();
+
+            const backToTopButton = document.getElementById('back-to-top');
+            const heroSection = document.getElementById('page-top');
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > heroSection.offsetHeight * 0.8) {
+                    backToTopButton.classList.add('visible');
+                } else {
+                    backToTopButton.classList.remove('visible');
+                }
+            });
         });
     </script>
 </body>
