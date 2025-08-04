@@ -3,29 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>曼谷互動探索指南 (新風格)</title>
+    <title>曼谷互動探索指南</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Urban Oasis -->
-    <!-- Application Structure Plan: 沿用高效的標籤式儀表板結構，但更新視覺風格為更現代的"Urban Oasis"主題。核心互動邏輯不變，確保使用者可以繼續透過頂部導覽快速切換主題。此更新的重點在於視覺刷新與增加更多互動式數據圖表，以回應使用者對價格比較的具體需求。 -->
-    <!-- Visualization & Content Choices: 
-        - 景點門票比較: (目標: 比較) -> 保留並更新風格，使用Chart.js水平長條圖，視覺化門票價格。
-        - 咖啡館消費水平: (目標: 比較/分類) -> 新增Chart.js圓餅圖，將咖啡館按消費等級($, $$, $$$)分類，提供預算參考。
-        - 美食價格帶分佈: (目標: 比較/分類) -> 新增Chart.js長條圖，展示不同餐廳/小吃的價格定位，從平價到高檔。
-        - Outlet接駁車票價: (目標: 比較) -> 新增Chart.js長條圖，簡單清晰地比較兩大Outlet的接駁車費用。
-        - 機車租賃押金: (目標: 比較/告知) -> 新增Chart.js水平長條圖，展示潛力店家的預估現金押金範圍，解決使用者核心痛點。
-        - 卡片式陳列: (目標: 組織) -> 更新卡片設計，採用更簡潔的風格，提升資訊可讀性。
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #f8fafc; /* slate-50 */
             color: #334155; /* slate-700 */
         }
+
+        /* --- Hero Section 歡迎橫幅 --- */
+        @keyframes ken-burns-zoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        @keyframes bounce-arrow {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+        .hero-section {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: -2;
+            animation: ken-burns-zoom 30s infinite alternate ease-in-out;
+        }
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+        .scroll-down-arrow {
+            position: absolute;
+            bottom: 2rem;
+            animation: bounce-arrow 2s infinite;
+        }
+        /* ------------------------------------ */
+
         #sidebar {
             transition: width 0.3s ease-in-out;
         }
@@ -114,11 +155,28 @@
 </head>
 <body class="antialiased">
 
-    <div class="flex min-h-screen">
-        <!-- Sidebar Navigation -->
+    <header class="hero-section">
+        <div class="hero-bg" style="background-image: url('https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-wider text-shadow-lg">曼谷</h1>
+        <p class="text-lg md:text-xl mt-4 text-gray-200 max-w-2xl">天使之城，一個融合古老傳統與現代活力的感官盛宴。</p>
+        <a href="#dashboard-content" class="scroll-down-arrow">
+            <svg class="w-8 h-8 text-white" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </a>
+    </header>
+
+    <div id="dashboard-content" class="flex min-h-screen relative">
+        <!-- 修正：這條獨立的線將永遠保持水平 -->
+        <div class="absolute top-24 left-0 right-0 h-px bg-slate-200 z-10"></div>
+
         <aside id="sidebar" class="bg-white border-r border-slate-200 flex-shrink-0 sidebar-collapsed">
-            <div class="p-4 border-b border-slate-200 h-16 flex items-center justify-center">
-                <h1 class="text-xl font-bold text-teal-700 transition-opacity duration-300">
+            <div class="h-24 p-2 flex flex-col items-center justify-center space-y-2">
+                 <a href="../../index.html" title="返回世界地圖" class="nav-btn !p-1 !border-0 justify-center">
+                    <span class="text-2xl">🌍</span>
+                    <span class="text-sm nav-text">返回世界地圖</span>
+                </a>
+                <h1 class="text-xl font-bold text-teal-700 transition-opacity duration-300 text-center">
                     <span class="sidebar-expanded:hidden">BKK</span>
                     <span class="hidden sidebar-expanded:inline">曼谷探索指南</span>
                 </h1>
@@ -167,136 +225,139 @@
             </nav>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-            <section id="landmarks" class="content-section active">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">王者之冠：曼谷不朽的經典地標</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">此區塊聚焦構成曼谷文化與歷史核心的必訪地標。透過下方的互動圖表，您可以快速比較主要景點的門票價格。</p>
-                </div>
-                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
-                    <h3 class="text-xl font-semibold text-center mb-4">主要景點門票價格比較 (泰銖 THB)</h3>
-                    <div class="chart-container">
-                        <canvas id="ticketPriceChart"></canvas>
+        <!-- 修正：移除 flex-col，並直接在 main 元素上設定 padding-top -->
+        <main class="flex-1 overflow-y-auto pt-24">
+            <!-- 修正：移除 h-24 的空白佔位 div -->
+            <div class="p-4 md:p-8">
+                <section id="landmarks" class="content-section active">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">王者之冠：曼谷不朽的經典地標</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">此區塊聚焦構成曼谷文化與歷史核心的必訪地標。透過下方的互動圖表，您可以快速比較主要景點的門票價格。</p>
                     </div>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-
-            <section id="cafes" class="content-section">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">慢活的藝術：曼谷咖啡館文化策展</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">曼谷的咖啡館已演變成融合設計、自然與社交的複合式空間。下圖為您分析精選咖啡館的消費水平分佈。</p>
-                </div>
-                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
-                    <h3 class="text-xl font-semibold text-center mb-4">咖啡館消費水平分佈 (店家數量)</h3>
-                    <div class="small-chart-container">
-                        <canvas id="cafePriceChart"></canvas>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                        <h3 class="text-xl font-semibold text-center mb-4">主要景點門票價格比較 (泰銖 THB)</h3>
+                        <div class="chart-container">
+                            <canvas id="ticketPriceChart"></canvas>
+                        </div>
                     </div>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
 
-            <section id="secrets" class="content-section">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">旅遊書之外：發掘曼谷的隱秘聖殿</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">探索那些較少遊客踏足，卻能提供獨特城市視角的場所。這些秘境多為免費，但部分地點可能需要支付小額費用給當地管理者。</p>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-
-            <section id="shopping" class="content-section">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">商業的殿堂：穿梭於曼谷的零售世界</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">為您繪製一幅清晰的曼谷零售地圖。從指標性商場到名牌折扣中心，滿足您所有的購物慾望。</p>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"></div>
-            </section>
-
-            <section id="meals" class="content-section">
-                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">三餐小吃：從米其林到街頭的味覺探險</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">引領您深入曼谷的正餐與鹹點世界。從米其林星級小吃到在地口袋名單，下圖為您展示各店家的價格定位。</p>
-                </div>
-                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
-                    <h3 class="text-xl font-semibold text-center mb-4">精選三餐小吃價格帶比較 (泰銖 THB)</h3>
-                    <div class="chart-container" style="height: 600px; max-height: 70vh;">
-                        <canvas id="foodPriceChart"></canvas>
+                <section id="cafes" class="content-section">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">慢活的藝術：曼谷咖啡館文化策展</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">曼谷的咖啡館已演變成融合設計、自然與社交的複合式空間。下圖為您分析精選咖啡館的消費水平分佈。</p>
                     </div>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-            
-            <section id="desserts" class="content-section">
-                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">甜蜜的誘惑：曼谷必訪甜點蛋糕店</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">為您的旅程增添一抹甜蜜。從國民級的蜜糖吐司到創新的泰式風味蛋糕，這裡是滿足您第二個胃的最佳去處。</p>
-                </div>
-                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
-                    <h3 class="text-xl font-semibold text-center mb-4">精選甜點價格帶比較 (泰銖 THB)</h3>
-                    <div class="chart-container">
-                        <canvas id="dessertPriceChart"></canvas>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                        <h3 class="text-xl font-semibold text-center mb-4">咖啡館消費水平分佈 (店家數量)</h3>
+                        <div class="small-chart-container">
+                            <canvas id="cafePriceChart"></canvas>
+                        </div>
                     </div>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
 
-            <section id="rooftop" class="content-section">
-                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">璀璨的夜：高空夜景</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">從曼谷的天際線俯瞰城市燈火，感受百萬夜景的震撼。這裡為您精選了最值得一去的高空酒吧。</p>
-                </div>
-                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
-                    <h3 class="text-xl font-semibold text-center mb-4">精選高空酒吧低消/入場費比較 (泰銖 THB)</h3>
-                    <div class="chart-container">
-                        <canvas id="rooftopPriceChart"></canvas>
+                <section id="secrets" class="content-section">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">旅遊書之外：發掘曼谷的隱秘聖殿</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">探索那些較少遊客踏足，卻能提供獨特城市視角的場所。這些秘境多為免費，但部分地點可能需要支付小額費用給當地管理者。</p>
                     </div>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
 
-            <section id="bars" class="content-section">
-                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">微醺的夜：特色主題酒吧</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">探索隱藏在曼谷巷弄中的創意與驚喜。從奇幻風格到復古情懷，每一家酒吧都有自己獨特的故事。</p>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-
-            <section id="markets" class="content-section">
-                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">熱鬧的夜：人氣必逛夜市</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">體驗曼谷最道地的庶民活力。在夜市裡，您可以盡情品嚐街頭美食、挖掘文創小物，感受越夜越美麗的城市脈動。</p>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
-
-            <section id="moto" class="content-section">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-2 text-slate-800">兩輪自由：曼谷機車租賃權威指南</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">教您如何在不抵押護照的情況下，順利租到機車。下圖比較了潛力店家的預估現金押金範圍。</p>
-                </div>
-                <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
-                    <h3 class="text-xl font-semibold text-center mb-4">潛力店家預估現金押金 (泰銖 THB)</h3>
-                    <div class="chart-container">
-                        <canvas id="motoDepositChart"></canvas>
+                <section id="shopping" class="content-section">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">商業的殿堂：穿梭於曼谷的零售世界</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">為您繪製一幅清晰的曼谷零售地圖。從指標性商場到名牌折扣中心，滿足您所有的購物慾望。</p>
                     </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
-                    <h3 class="text-xl font-semibold text-center mb-6">安全租車策略：四步驟流程</h3>
-                    <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
-                        <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">①</div><h4 class="font-bold">準備文件</h4><p class="text-sm text-slate-500">備妥國際駕照(IDP)與護照影本</p></div>
-                        <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
-                        <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">②</div><h4 class="font-bold">現金為王</h4><p class="text-sm text-slate-500">準備1000-5000泰銖作為現金押金</p></div>
-                        <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
-                        <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">③</div><h4 class="font-bold">檢查存證</h4><p class="text-sm text-slate-500">仔細檢查車況並錄影拍照存證</p></div>
-                        <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
-                        <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">④</div><h4 class="font-bold">審閱合約</h4><p class="text-sm text-slate-500">確認合約內容、車號與租賃日期</p></div>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"></div>
+                </section>
+
+                <section id="meals" class="content-section">
+                     <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">三餐小吃：從米其林到街頭的味覺探險</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">引領您深入曼谷的正餐與鹹點世界。從米其林星級小吃到在地口袋名單，下圖為您展示各店家的價格定位。</p>
                     </div>
-                </div>
-                <h3 class="text-xl font-semibold text-center mb-6">潛力店家線索 (可能接受現金押金)</h3>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </section>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                        <h3 class="text-xl font-semibold text-center mb-4">精選三餐小吃價格帶比較 (泰銖 THB)</h3>
+                        <div class="chart-container" style="height: 600px; max-height: 70vh;">
+                            <canvas id="foodPriceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
+                
+                <section id="desserts" class="content-section">
+                     <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">甜蜜的誘惑：曼谷必訪甜點蛋糕店</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">為您的旅程增添一抹甜蜜。從國民級的蜜糖吐司到創新的泰式風味蛋糕，這裡是滿足您第二個胃的最佳去處。</p>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                        <h3 class="text-xl font-semibold text-center mb-4">精選甜點價格帶比較 (泰銖 THB)</h3>
+                        <div class="chart-container">
+                            <canvas id="dessertPriceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
+
+                <section id="rooftop" class="content-section">
+                     <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">璀璨的夜：高空夜景</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">從曼谷的天際線俯瞰城市燈火，感受百萬夜景的震撼。這裡為您精選了最值得一去的高空酒吧。</p>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                        <h3 class="text-xl font-semibold text-center mb-4">精選高空酒吧低消/入場費比較 (泰銖 THB)</h3>
+                        <div class="chart-container">
+                            <canvas id="rooftopPriceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
+
+                <section id="bars" class="content-section">
+                     <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">微醺的夜：特色主題酒吧</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">探索隱藏在曼谷巷弄中的創意與驚喜。從奇幻風格到復古情懷，每一家酒吧都有自己獨特的故事。</p>
+                    </div>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
+
+                <section id="markets" class="content-section">
+                     <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">熱鬧的夜：人氣必逛夜市</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">體驗曼谷最道地的庶民活力。在夜市裡，您可以盡情品嚐街頭美食、挖掘文創小物，感受越夜越美麗的城市脈動。</p>
+                    </div>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
+
+                <section id="moto" class="content-section">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-slate-800">兩輪自由：曼谷機車租賃權威指南</h2>
+                        <p class="max-w-3xl mx-auto text-slate-600">教您如何在不抵押護照的情況下，順利租到機車。下圖比較了潛力店家的預估現金押金範圍。</p>
+                    </div>
+                    <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                        <h3 class="text-xl font-semibold text-center mb-4">潛力店家預估現金押金 (泰銖 THB)</h3>
+                        <div class="chart-container">
+                            <canvas id="motoDepositChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+                        <h3 class="text-xl font-semibold text-center mb-6">安全租車策略：四步驟流程</h3>
+                        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+                            <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">①</div><h4 class="font-bold">準備文件</h4><p class="text-sm text-slate-500">備妥國際駕照(IDP)與護照影本</p></div>
+                            <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
+                            <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">②</div><h4 class="font-bold">現金為王</h4><p class="text-sm text-slate-500">準備1000-5000泰銖作為現金押金</p></div>
+                            <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
+                            <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">③</div><h4 class="font-bold">檢查存證</h4><p class="text-sm text-slate-500">仔細檢查車況並錄影拍照存證</p></div>
+                            <div class="text-slate-300 text-2xl font-light hidden md:block">&rarr;</div>
+                            <div class="text-center flex-1"><div class="text-5xl mb-2 text-teal-500">④</div><h4 class="font-bold">審閱合約</h4><p class="text-sm text-slate-500">確認合約內容、車號與租賃日期</p></div>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-6">潛力店家線索 (可能接受現金押金)</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
+            </div>
         </main>
     </div>
 
@@ -349,7 +410,7 @@
                 { name: 'Somsak Pu Ob', type: '米其林', price: 290, description: '以粉絲焗蟹/蝦聞名的街頭老店，炭火烹調香氣十足。必比登推薦。'},
                 { name: 'Thipsamai', type: '在地三餐', price: 120, description: '被譽為泰國第一的泰式炒河粉(Pad Thai)，品質穩定，適合午餐。' },
                 { name: 'Nai Ek Roll Noodle', type: '米其林', price: 60, description: '中國城的名店，以脆皮燒肉和粿汁聞名，是體驗在地早餐的好選擇。'},
-                { name: 'Khao Gaeng Jek Pui', type: '米其林', price: 40, description: '中國城的「音樂椅咖哩飯」，沒有桌子，大家坐在小凳子上享用，極具特色。'},
+                { name: 'Khao Gaeng Jek Pui', type: '米其林', price: 40, description: '中國城的「音樂椅咖飯」，沒有桌子，大家坐在小凳子上享用，極具特色。'},
                 { name: '紅大哥海南雞飯', type: '米其林', price: 60, description: '水門市場名店，身穿粉紅色制服，多年蟬聯必比登推薦，價格實惠。' },
                 { name: 'Jok Prince', type: '在地三餐', price: 50, description: '河岸區老店，其豬肉丸粥(Jok)帶有獨特的煙燻味，適合早餐。' },
                 { name: '中國城 (Yaowarat)', type: '在地三餐', price: 150, description: '街頭美食聖地，入夜後尤其熱鬧，海鮮、粿汁、甜品應有盡有，適合晚餐。' },
@@ -475,25 +536,20 @@
             const barColor = 'rgba(13, 148, 136, 0.6)';
             const borderColor = 'rgba(13, 148, 136, 1)';
 
-            // Landmarks Chart
-            const ticketCtx = document.getElementById('ticketPriceChart').getContext('2d');
-            const ticketData = appData.landmarks.filter(item => item.price > 0);
-            new Chart(ticketCtx, {
+            new Chart(document.getElementById('ticketPriceChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: ticketData.map(item => item.name),
-                    datasets: [{ label: '門票價格 (THB)', data: ticketData.map(item => item.price), backgroundColor: barColor, borderColor: borderColor, borderWidth: 1 }]
+                    labels: appData.landmarks.filter(item => item.price > 0).map(item => item.name),
+                    datasets: [{ label: '門票價格 (THB)', data: appData.landmarks.filter(item => item.price > 0).map(item => item.price), backgroundColor: barColor, borderColor: borderColor, borderWidth: 1 }]
                 },
                 options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '價格 (THB)' } } } }
             });
 
-            // Cafe Price Chart
-            const cafeCtx = document.getElementById('cafePriceChart').getContext('2d');
             const cafePriceTiers = appData.cafes.reduce((acc, cafe) => {
                 acc[cafe.priceTier-1] = (acc[cafe.priceTier-1] || 0) + 1;
                 return acc;
             }, [0,0,0]);
-            new Chart(cafeCtx, {
+            new Chart(document.getElementById('cafePriceChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: ['平價 (฿)', '中價 (฿฿)', '高價 (฿฿฿)'],
@@ -502,45 +558,34 @@
                 options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '店家數量' } } } }
             });
             
-            // Meals Price Chart
-            const foodCtx = document.getElementById('foodPriceChart').getContext('2d');
-            const sortedFood = [...appData.meals].sort((a,b) => a.price - b.price);
-            new Chart(foodCtx, {
+            new Chart(document.getElementById('foodPriceChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: sortedFood.map(f => f.name),
-                    datasets: [{ label: '起價約 (THB)', data: sortedFood.map(f => f.price), backgroundColor: 'rgba(219, 58, 58, 0.6)', borderColor: 'rgba(185, 28, 28, 1)', borderWidth: 1 }]
+                    labels: [...appData.meals].sort((a,b) => a.price - b.price).map(f => f.name),
+                    datasets: [{ label: '起價約 (THB)', data: [...appData.meals].sort((a,b) => a.price - b.price).map(f => f.price), backgroundColor: 'rgba(219, 58, 58, 0.6)', borderColor: 'rgba(185, 28, 28, 1)', borderWidth: 1 }]
                 },
                  options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '價格 (THB)' } } } }
             });
             
-            // Desserts Price Chart
-            const dessertCtx = document.getElementById('dessertPriceChart').getContext('2d');
-            const sortedDesserts = [...appData.desserts].sort((a,b) => a.price - b.price);
-            new Chart(dessertCtx, {
+            new Chart(document.getElementById('dessertPriceChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: sortedDesserts.map(d => d.name),
-                    datasets: [{ label: '招牌起價約 (THB)', data: sortedDesserts.map(d => d.price), backgroundColor: 'rgba(234, 179, 8, 0.6)', borderColor: 'rgba(202, 138, 4, 1)', borderWidth: 1 }]
+                    labels: [...appData.desserts].sort((a,b) => a.price - b.price).map(d => d.name),
+                    datasets: [{ label: '招牌起價約 (THB)', data: [...appData.desserts].sort((a,b) => a.price - b.price).map(d => d.price), backgroundColor: 'rgba(234, 179, 8, 0.6)', borderColor: 'rgba(202, 138, 4, 1)', borderWidth: 1 }]
                 },
                  options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '價格 (THB)' } } } }
             });
 
-            // Rooftop Price Chart
-            const rooftopCtx = document.getElementById('rooftopPriceChart').getContext('2d');
-            const sortedRooftop = [...appData.rooftop].sort((a,b) => a.price - b.price);
-            new Chart(rooftopCtx, {
+            new Chart(document.getElementById('rooftopPriceChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: sortedRooftop.map(n => n.name),
-                    datasets: [{ label: '低消/入場約 (THB)', data: sortedRooftop.map(n => n.price), backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(67, 56, 202, 1)', borderWidth: 1 }]
+                    labels: [...appData.rooftop].sort((a,b) => a.price - b.price).map(n => n.name),
+                    datasets: [{ label: '低消/入場約 (THB)', data: [...appData.rooftop].sort((a,b) => a.price - b.price).map(n => n.price), backgroundColor: 'rgba(79, 70, 229, 0.6)', borderColor: 'rgba(67, 56, 202, 1)', borderWidth: 1 }]
                 },
                  options: { ...chartDefaultOptions, scales: { ...chartDefaultOptions.scales, x: { ...chartDefaultOptions.scales.x, title: { ...chartDefaultOptions.scales.x.title, text: '價格 (THB)' } } } }
             });
 
-            // Moto Deposit Chart
-            const motoCtx = document.getElementById('motoDepositChart').getContext('2d');
-            new Chart(motoCtx, {
+            new Chart(document.getElementById('motoDepositChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: appData.moto.map(m => m.name),
@@ -567,15 +612,11 @@
             navButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const targetId = button.dataset.target;
-
+                    if (!targetId) return; // 防止點擊返回按鈕時出錯
                     navButtons.forEach(btn => {
-                        if (btn.dataset.target === targetId) {
-                            btn.classList.add('active');
-                        } else {
-                            btn.classList.remove('active');
-                        }
+                        if (btn.dataset.target) btn.classList.remove('active');
                     });
-
+                    button.classList.add('active');
                     contentSections.forEach(section => {
                         section.classList.remove('active');
                         if (section.id === targetId) {
