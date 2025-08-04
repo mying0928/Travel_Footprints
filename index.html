@@ -80,11 +80,11 @@
         }
         .card:hover::before { opacity: 1; }
         
-        /* 確保載入的內容背景是明亮的 */
         #city-content-display {
             background-color: #f8fafc; /* slate-50 */
             color: #334155; /* slate-700 */
             width: 100%;
+            position: relative; /* For positioning the back button */
         }
 
     </style>
@@ -94,16 +94,15 @@
     <div id="bg-image-1" class="bg-image-container" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop');"></div>
     <div id="bg-image-2" class="bg-image-container"></div>
 
-    <div id="main-container" class="min-h-screen flex flex-col items-center justify-start pt-24 md:pt-32 px-4 pb-12">
-
-        <!-- 這個區塊將一直存在，作為橫幅 -->
-        <div class="text-center mb-12">
+    <div id="main-container" class="flex flex-col items-center justify-start">
+        <!-- Banner Section -->
+        <div id="banner-section" class="pt-24 md:pt-32 px-4 pb-12 text-center">
             <h1 id="main-title" class="text-4xl md:text-5xl font-bold tracking-wider text-shadow-lg">探索世界</h1>
             <p id="sub-title" class="text-lg md:text-xl mt-2 text-gray-200">從選擇一個國家開始您的旅程</p>
         </div>
 
-        <!-- 卡片選擇容器 -->
-        <div id="selection-container" class="w-full max-w-6xl">
+        <!-- Card Selection Container -->
+        <div id="selection-container" class="w-full max-w-6xl px-4 pb-12">
             <div id="country-selection" class="card-container">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
             </div>
@@ -119,16 +118,15 @@
                     </a>
                 </div>
             </div>
-        </div>
-        
-        <div class="mt-12 h-10">
-            <button id="back-button" class="hidden opacity-0 transition-opacity duration-300 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg">
-                &larr; 返回
-            </button>
+             <div class="mt-12 h-10 text-center">
+                <button id="back-button" class="hidden opacity-0 transition-opacity duration-300 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg">
+                    &larr; 返回
+                </button>
+            </div>
         </div>
     </div>
     
-    <!-- 這個容器將用來放置從子頁面載入的內容 -->
+    <!-- Container for loaded city content -->
     <div id="city-content-display" class="hidden"></div>
 
 
@@ -303,14 +301,10 @@
         async function loadCityContent(path) {
             currentState = 'loading';
             selectionContainer.classList.add('hidden');
-            mainContainer.classList.remove('pb-12'); // 移除底部 padding，讓內容可以貼齊底部
+            backButton.classList.add('hidden');
             
-            // 顯示載入中提示
             cityContentDisplay.innerHTML = `<div class="flex justify-center items-center h-64"><p class="text-2xl text-slate-600">正在載入探索指南...</p></div>`;
             cityContentDisplay.classList.remove('hidden');
-            
-            backButton.classList.remove('opacity-100');
-            backButton.classList.add('hidden');
 
             try {
                 const response = await fetch(path);
@@ -320,58 +314,46 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlText, 'text/html');
 
+                // Inject HTML content
                 const contentNode = doc.body.firstElementChild;
-                const headElements = doc.head.children;
-
-                // 注入內容
                 cityContentDisplay.innerHTML = '';
                 if (contentNode) {
                     cityContentDisplay.appendChild(contentNode);
-                } else {
-                     cityContentDisplay.innerHTML = doc.body.innerHTML;
                 }
 
-                // 載入並執行必要的樣式和腳本
-                for (const el of Array.from(headElements)) {
-                    if (el.tagName === 'STYLE' || (el.tagName === 'LINK' && el.rel === 'stylesheet')) {
-                        const newEl = el.cloneNode(true);
-                        newEl.dataset.loadedFrom = path;
-                        document.head.appendChild(newEl);
-                    } else if (el.tagName === 'SCRIPT' && el.src) {
-                        await loadScript(el.src, path);
-                    }
+                // Load external scripts from head (like chart.js)
+                const headScripts = doc.head.querySelectorAll('script[src]');
+                for (const script of headScripts) {
+                    await loadScript(script.src, path);
                 }
-                
-                const bodyScripts = doc.body.querySelectorAll('script');
+
+                // Find and execute inline script from body
+                const bodyScripts = doc.body.querySelectorAll('script:not([src])');
                 for (const script of bodyScripts) {
-                    const newScript = document.createElement('script');
-                    newScript.dataset.loadedFrom = path;
-                    if (script.src) {
-                        await loadScript(script.src, path);
-                    } else {
-                        let scriptText = script.textContent;
-                        const domContentLoadedRegex = /document\.addEventListener\s*\(\s*['"]DOMContentLoaded['"]\s*,\s*\(\)\s*=>\s*\{([\s\S]*)\}\s*\)\s*;/m;
-                        const match = scriptText.match(domContentLoadedRegex);
-                        if (match && match[1]) {
-                            scriptText = match[1];
-                        }
-                        newScript.textContent = scriptText;
-                        document.body.appendChild(newScript);
+                    let scriptText = script.textContent;
+                    const domContentLoadedRegex = /document\.addEventListener\s*\(\s*['"]DOMContentLoaded['"]\s*,\s*([\s\S]*?)\s*=>\s*\{([\s\S]*)\}\s*\)\s*;/m;
+                    const match = scriptText.match(domContentLoadedRegex);
+                    
+                    const codeToExecute = (match && match[2]) ? match[2] : scriptText;
+
+                    try {
+                        new Function(codeToExecute)();
+                    } catch (e) {
+                        console.error("執行動態腳本時出錯:", e);
+                        console.error("腳本內容:", codeToExecute);
                     }
                 }
                 
                 currentState = 'city-view';
-                // 將返回按鈕移動到 city-content-display 的頂部，使其在白色背景上可見
                 const backButtonClone = backButton.cloneNode(true);
                 backButtonClone.addEventListener('click', handleBackButtonClick);
                 backButtonClone.className = "absolute top-4 left-4 z-50 bg-slate-800/50 backdrop-blur-md hover:bg-slate-800/70 text-white font-bold py-2 px-6 rounded-lg transition-all";
                 cityContentDisplay.prepend(backButtonClone);
 
-
             } catch (error) {
                 console.error("無法載入城市內容:", error);
                 cityContentDisplay.innerHTML = `<div class="flex justify-center items-center h-64"><p class="text-2xl text-slate-600">抱歉，載入內容時發生錯誤。</p></div>`;
-                currentState = 'city-view'; // 允許返回
+                currentState = 'city-view';
                 backButton.classList.remove('hidden');
                 setTimeout(() => backButton.classList.add('opacity-100'), 10);
             }
@@ -379,6 +361,11 @@
 
         function loadScript(src, path) {
             return new Promise((resolve, reject) => {
+                const existingScript = document.querySelector(`script[src="${src}"]`);
+                if (existingScript) {
+                    resolve();
+                    return;
+                }
                 const script = document.createElement('script');
                 script.src = src;
                 script.async = false; 
@@ -397,7 +384,6 @@
             loadedElements.forEach(el => el.parentNode.removeChild(el));
 
             selectionContainer.classList.remove('hidden');
-            mainContainer.classList.add('pb-12'); // 恢復底部 padding
         }
 
         function setupCardHoverEffects() {
