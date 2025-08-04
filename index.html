@@ -9,34 +9,73 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; }
-        @keyframes ken-burns-zoom { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        @keyframes ken-burns-zoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
         .bg-image-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
             transition: opacity 0.8s ease-in-out;
             animation: ken-burns-zoom 30s infinite alternate ease-in-out;
         }
         #bg-image-1 { z-index: -2; }
         #bg-image-2 { z-index: -1; opacity: 0; }
         .bg-image-container::after {
-            content: ''; position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4);
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
         }
-        #main-title, #sub-title { transition: opacity 0.4s ease-in-out; }
+
+        #main-title, #sub-title {
+            transition: opacity 0.4s ease-in-out;
+        }
+
         .card-container.hidden { display: none; }
+
         .card {
-            opacity: 0; transform: translateY(20px);
-            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 
+                opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             transform-style: preserve-3d;
         }
-        .card.visible { opacity: 1; transform: translateY(0); }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .card::before {
-            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 0.75rem; opacity: 0; transition: opacity 0.5s;
-            background: radial-gradient(350px circle at var(--x) var(--y), rgba(255, 255, 255, 0.25), transparent 40%);
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.5s;
+            background: radial-gradient(
+                350px circle at var(--x) var(--y),
+                rgba(255, 255, 255, 0.25),
+                transparent 40%
+            );
         }
         .card:hover::before { opacity: 1; }
+
     </style>
 </head>
 <body class="bg-slate-900 text-white">
@@ -45,10 +84,12 @@
     <div id="bg-image-2" class="bg-image-container"></div>
 
     <div id="main-container" class="min-h-screen flex flex-col items-center justify-start pt-24 md:pt-32 px-4 pb-12">
+
         <div class="text-center mb-12">
             <h1 id="main-title" class="text-4xl md:text-5xl font-bold tracking-wider text-shadow-lg">探索世界</h1>
             <p id="sub-title" class="text-lg md:text-xl mt-2 text-gray-200">從選擇一個國家開始您的旅程</p>
         </div>
+
         <div id="selection-container" class="w-full max-w-6xl">
             <div id="country-selection" class="card-container">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
@@ -66,11 +107,13 @@
                 </div>
             </div>
         </div>
+
         <div class="mt-12 h-10">
             <button id="back-button" class="hidden opacity-0 transition-opacity duration-300 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg">
                 &larr; 返回
             </button>
         </div>
+
     </div>
 
     <script>
@@ -79,9 +122,8 @@
                 img: "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2070&auto=format&fit=crop",
                 cities: { 
                     "曼谷": { 
-                        img: "https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                        // 更新：路徑指向通用樣板，並帶上城市參數
-                        path: "city.html?city=bangkok" 
+                        img: "https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", 
+                        path: "Thailand/Bangkok/index.html" 
                     } 
                 }
             },
@@ -106,6 +148,7 @@
                 }
             }
         };
+
         const mainTitle = document.getElementById('main-title');
         const subTitle = document.getElementById('sub-title');
         const countrySelection = document.getElementById('country-selection');
@@ -200,6 +243,7 @@
                 backButton.classList.add('opacity-100');
                 newBgUrl = travelData[selectedCountry].cities[selectedCity].img;
             }
+            // FIX: Changed newUrl to newBgUrl
             changeBackground(newBgUrl);
             mainTitle.textContent = newTitleText;
             subTitle.textContent = newSubTitleText;
@@ -207,7 +251,9 @@
             subTitle.style.opacity = 1;
             if (newView) {
                 newView.classList.remove('hidden');
-                requestAnimationFrame(() => { animateCardsIn(newView); });
+                requestAnimationFrame(() => {
+                    animateCardsIn(newView);
+                });
             }
         }
 
