@@ -11,6 +11,7 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
+            transition: background-color 0.5s ease-in-out;
         }
 
         @keyframes ken-burns-zoom {
@@ -44,6 +45,9 @@
         #main-title, #sub-title {
             transition: opacity 0.4s ease-in-out;
         }
+        
+        #main-container.hidden { display: none; }
+        #city-content-container.hidden { display: none; }
 
         .card-container.hidden { display: none; }
 
@@ -113,8 +117,11 @@
                 &larr; 返回
             </button>
         </div>
-
     </div>
+    
+    <!-- 這個容器將用來放置從子頁面載入的內容 -->
+    <div id="city-content-container" class="hidden"></div>
+
 
     <script>
         const travelData = {
@@ -149,14 +156,18 @@
             }
         };
 
+        const mainContainer = document.getElementById('main-container');
+        const cityContentContainer = document.getElementById('city-content-container');
         const mainTitle = document.getElementById('main-title');
         const subTitle = document.getElementById('sub-title');
         const countrySelection = document.getElementById('country-selection');
         const citySelection = document.getElementById('city-selection');
         const finalLinkContainer = document.getElementById('final-link-container');
+        const finalLink = document.getElementById('final-link');
         const backButton = document.getElementById('back-button');
         const bgImage1 = document.getElementById('bg-image-1');
         const bgImage2 = document.getElementById('bg-image-2');
+        
         let isBg1Active = true;
         let currentState = 'country';
         let selectedCountry = null;
@@ -214,11 +225,14 @@
             const currentView = document.getElementById(currentState === 'final' ? 'final-link-container' : `${currentState}-selection`);
             mainTitle.style.opacity = 0;
             subTitle.style.opacity = 0;
-            animateCardsOut(currentView);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            currentView.classList.add('hidden');
+            if (currentView) animateCardsOut(currentView);
+            
+            await new Promise(resolve => setTimeout(resolve, 400));
+            if (currentView) currentView.classList.add('hidden');
+            
             currentState = newState;
             let newView, newBgUrl, newTitleText, newSubTitleText;
+            
             if (newState === 'country') {
                 newView = countrySelection;
                 newTitleText = "探索世界";
@@ -232,7 +246,7 @@
                 newTitleText = selectedCountry;
                 newSubTitleText = "選擇您想探索的城市";
                 backButton.classList.remove('hidden');
-                backButton.classList.add('opacity-100');
+                setTimeout(() => backButton.classList.add('opacity-100'), 10);
                 newBgUrl = travelData[selectedCountry].img;
             } else if (newState === 'final') {
                 newView = finalLinkContainer;
@@ -240,15 +254,16 @@
                 newTitleText = selectedCity;
                 newSubTitleText = `精彩的旅程即將展開`;
                 backButton.classList.remove('hidden');
-                backButton.classList.add('opacity-100');
+                setTimeout(() => backButton.classList.add('opacity-100'), 10);
                 newBgUrl = travelData[selectedCountry].cities[selectedCity].img;
             }
-            // FIX: Changed newUrl to newBgUrl
+            
             changeBackground(newBgUrl);
             mainTitle.textContent = newTitleText;
             subTitle.textContent = newSubTitleText;
             mainTitle.style.opacity = 1;
             subTitle.style.opacity = 1;
+            
             if (newView) {
                 newView.classList.remove('hidden');
                 requestAnimationFrame(() => {
@@ -272,8 +287,102 @@
 
         function displayFinalLink(country, city) {
             document.getElementById('final-destination').textContent = city;
-            const path = travelData[country].cities[city].path;
-            document.getElementById('final-link').href = path || '#';
+            // 我們不再設定 href，而是在點擊事件中處理路徑
+        }
+        
+        async function loadCityContent(path) {
+            currentState = 'loading';
+            document.body.classList.remove('bg-slate-900'); // 移除主頁的深色背景
+            mainContainer.classList.add('hidden');
+            cityContentContainer.innerHTML = `<div class="flex justify-center items-center h-screen bg-slate-50"><p class="text-2xl text-slate-600">正在載入探索指南...</p></div>`;
+            cityContentContainer.classList.remove('hidden');
+            backButton.classList.remove('opacity-100');
+            backButton.classList.add('hidden');
+
+            try {
+                const response = await fetch(path);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const htmlText = await response.text();
+                
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+
+                const contentNode = doc.body.firstElementChild;
+                const headElements = doc.head.children;
+
+                // 注入內容
+                cityContentContainer.innerHTML = '';
+                if (contentNode) {
+                    cityContentContainer.appendChild(contentNode);
+                } else {
+                     cityContentContainer.innerHTML = doc.body.innerHTML;
+                }
+
+                // 載入並執行必要的樣式和腳本
+                for (const el of Array.from(headElements)) {
+                    if (el.tagName === 'STYLE' || (el.tagName === 'LINK' && el.rel === 'stylesheet')) {
+                        const newEl = el.cloneNode(true);
+                        newEl.dataset.loadedFrom = path;
+                        document.head.appendChild(newEl);
+                    } else if (el.tagName === 'SCRIPT' && el.src) {
+                        await loadScript(el.src, path);
+                    }
+                }
+                
+                const bodyScripts = doc.body.querySelectorAll('script');
+                for (const script of bodyScripts) {
+                    const newScript = document.createElement('script');
+                    newScript.dataset.loadedFrom = path;
+                    if (script.src) {
+                        await loadScript(script.src, path);
+                    } else {
+                        // 移除 DOMContentLoaded 監聽器，直接執行其內容
+                        let scriptText = script.textContent;
+                        const domContentLoadedRegex = /document\.addEventListener\s*\(\s*['"]DOMContentLoaded['"]\s*,\s*\(\)\s*=>\s*\{([\s\S]*)\}\s*\)\s*;/m;
+                        const match = scriptText.match(domContentLoadedRegex);
+                        if (match && match[1]) {
+                            scriptText = match[1];
+                        }
+                        newScript.textContent = scriptText;
+                        document.body.appendChild(newScript);
+                    }
+                }
+                
+                currentState = 'city-view';
+                backButton.classList.remove('hidden');
+                setTimeout(() => backButton.classList.add('opacity-100'), 10);
+
+            } catch (error) {
+                console.error("無法載入城市內容:", error);
+                cityContentContainer.innerHTML = `<div class="flex justify-center items-center h-screen bg-slate-50"><p class="text-2xl text-slate-600">抱歉，載入內容時發生錯誤。</p></div>`;
+                currentState = 'city-view'; // 允許返回
+                backButton.classList.remove('hidden');
+                setTimeout(() => backButton.classList.add('opacity-100'), 10);
+            }
+        }
+
+        function loadScript(src, path) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = false; // 確保腳本按順序加載
+                script.dataset.loadedFrom = path;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        function unloadCityContent(path) {
+            cityContentContainer.innerHTML = '';
+            cityContentContainer.classList.add('hidden');
+            
+            // 移除為子頁面動態添加的樣式和腳本
+            const loadedElements = document.querySelectorAll(`[data-loaded-from="${path}"]`);
+            loadedElements.forEach(el => el.parentNode.removeChild(el));
+
+            document.body.classList.add('bg-slate-900'); // 恢復主頁的深色背景
+            mainContainer.classList.remove('hidden');
         }
 
         function setupCardHoverEffects() {
@@ -294,9 +403,27 @@
             });
         }
 
+        finalLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const path = travelData[selectedCountry]?.cities[selectedCity]?.path;
+            if (path && path !== '#') {
+                loadCityContent(path);
+            } else {
+                alert('這個目的地的詳細頁面還沒準備好！');
+            }
+        });
+
         backButton.addEventListener('click', () => {
-            if (currentState === 'final') { updateView('city'); } 
-            else if (currentState === 'city') { selectedCity = null; updateView('country'); }
+            if (currentState === 'city-view') {
+                const path = travelData[selectedCountry]?.cities[selectedCity]?.path;
+                unloadCityContent(path);
+                updateView('final');
+            } else if (currentState === 'final') {
+                updateView('city');
+            } else if (currentState === 'city') {
+                selectedCity = null;
+                updateView('country');
+            }
         });
 
         window.onload = () => {
