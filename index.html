@@ -13,6 +13,25 @@
             font-family: 'Noto Sans TC', sans-serif;
         }
 
+        /* --- 新增：轉場動畫遮罩 --- */
+        #page-transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #020617; /* slate-950 */
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #page-transition-overlay.fade-out {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        /* ------------------------- */
+
         @keyframes ken-burns-zoom {
             0% { transform: scale(1); }
             100% { transform: scale(1.05); }
@@ -79,6 +98,9 @@
     </style>
 </head>
 <body class="bg-slate-900 text-white">
+
+    <!-- 新增：轉場動畫的 HTML 元素 -->
+    <div id="page-transition-overlay"></div>
 
     <div id="bg-image-1" class="bg-image-container" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop');"></div>
     <div id="bg-image-2" class="bg-image-container"></div>
@@ -157,6 +179,7 @@
         const backButton = document.getElementById('back-button');
         const bgImage1 = document.getElementById('bg-image-1');
         const bgImage2 = document.getElementById('bg-image-2');
+        const transitionOverlay = document.getElementById('page-transition-overlay');
         let isBg1Active = true;
         let currentState = 'country';
         let selectedCountry = null;
@@ -270,9 +293,20 @@
         }
 
         function displayFinalLink(country, city) {
+            const finalLink = document.getElementById('final-link');
             document.getElementById('final-destination').textContent = city;
             const path = travelData[country].cities[city].path;
-            document.getElementById('final-link').href = path || '#';
+            finalLink.href = path || '#';
+
+            // 更新：為連結綁定轉場動畫事件
+            finalLink.addEventListener('click', function(event) {
+                event.preventDefault(); // 防止立即跳轉
+                const destination = this.href;
+                transitionOverlay.classList.add('fade-out'); // 觸發淡出
+                setTimeout(() => {
+                    window.location.href = destination; // 動畫結束後再跳轉
+                }, 500); // 等待 500ms，與 CSS transition 時間一致
+            });
         }
 
         function setupCardHoverEffects() {
