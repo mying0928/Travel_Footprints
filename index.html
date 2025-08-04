@@ -11,8 +11,14 @@
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
+            /* 移除：cursor: none; 以恢復預設滑鼠 */
         }
-        /* 背景圖片容器 */
+
+        @keyframes ken-burns-zoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
         .bg-image-container {
             position: fixed;
             top: 0;
@@ -22,14 +28,10 @@
             background-size: cover;
             background-position: center;
             transition: opacity 0.8s ease-in-out;
+            animation: ken-burns-zoom 30s infinite alternate ease-in-out;
         }
-        #bg-image-1 {
-            z-index: -2;
-        }
-        #bg-image-2 {
-            z-index: -1;
-            opacity: 0;
-        }
+        #bg-image-1 { z-index: -2; }
+        #bg-image-2 { z-index: -1; opacity: 0; }
         .bg-image-container::after {
             content: '';
             position: absolute;
@@ -40,28 +42,46 @@
             background-color: rgba(0, 0, 0, 0.4);
         }
 
-        /* 標題動畫 */
         #main-title, #sub-title {
             transition: opacity 0.4s ease-in-out;
         }
 
-        .card-container.hidden {
-            display: none;
-        }
+        .card-container.hidden { display: none; }
 
         .card {
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: 
+                opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
         }
 
         .card.visible {
             opacity: 1;
             transform: translateY(0);
         }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.5s;
+            background: radial-gradient(
+                350px circle at var(--x) var(--y),
+                rgba(255, 255, 255, 0.25),
+                transparent 40%
+            );
+        }
+        .card:hover::before { opacity: 1; }
+
     </style>
 </head>
-<body class="text-white">
+<body class="bg-slate-900 text-white">
+
+    <!-- 移除：自訂滑鼠游標的 HTML 結構 -->
 
     <div id="bg-image-1" class="bg-image-container" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop');"></div>
     <div id="bg-image-2" class="bg-image-container"></div>
@@ -73,14 +93,11 @@
             <p id="sub-title" class="text-lg md:text-xl mt-2 text-gray-200">從選擇一個國家開始您的旅程</p>
         </div>
 
-        <!-- 更新：將 max-w-4xl 改為 max-w-6xl 以提供更多空間 -->
         <div id="selection-container" class="w-full max-w-6xl">
             <div id="country-selection" class="card-container">
-                <!-- 更新：將 lg:grid-cols-4 改為 lg:grid-cols-3 並將 gap-6 改為 gap-8 -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
             </div>
             <div id="city-selection" class="card-container hidden">
-                 <!-- 更新：將 gap-6 改為 gap-8，保持與國家選擇一致 -->
                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
             </div>
             <div id="final-link-container" class="card-container hidden">
@@ -103,64 +120,35 @@
     </div>
 
     <script>
-        // 資料結構
-        // 在每個城市物件中新增 'path' 屬性來定義其對應的 HTML 檔案路徑
+        // 移除：所有與自訂滑鼠游標相關的 JavaScript 程式碼
+
         const travelData = {
             "泰國": {
                 img: "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2070&auto=format&fit=crop",
-                cities: { 
-                    "曼谷": { 
-                        img: "https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                        path: "Thailand/Bangkok/index.html" // 正確的檔案路徑
-                    } 
-                }
+                cities: { "曼谷": { img: "https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?q=80&w=1336&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", path: "Thailand/Bangkok/index.html" } }
             },
             "越南": {
                 img: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070&auto=format&fit=crop",
-                cities: { 
-                    "富國島": { 
-                        img: "https://images.unsplash.com/photo-1693294603830-f44c9511d643?q=80&w=3133&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                        path: "#" // 預留路徑
-                    } 
-                }
+                cities: { "富國島": { img: "https://images.unsplash.com/photo-1693294603830-f44c9511d643?q=80&w=3133&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", path: "#" } }
             },
             "日本": {
                 img: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=2070&auto=format&fit=crop",
                 cities: {
-                    "大阪": { 
-                        img: "https://images.unsplash.com/photo-1648129866953-cb22eec73d26?q=80&w=2342&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                        path: "#" // 預留路徑
-                    },
-                    "京都": { 
-                        img: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?q=80&w=2070&auto=format&fit=crop",
-                        path: "#" // 預留路徑
-                    },
-                    "奈良": { 
-                        img: "https://images.unsplash.com/photo-1550303435-1703d8811aaa?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                        path: "#" // 預留路徑
-                    }
+                    "大阪": { img: "https://images.unsplash.com/photo-1648129866953-cb22eec73d26?q=80&w=2342&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", path: "#" },
+                    "京都": { img: "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?q=80&w=2070&auto=format&fit=crop", path: "#" },
+                    "奈良": { img: "https://images.unsplash.com/photo-1550303435-1703d8811aaa?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", path: "#" }
                 }
             },
             "義大利": {
                 img: "https://images.unsplash.com/photo-1515859005217-8a1f08870f59?q=80&w=2070&auto=format&fit=crop",
                 cities: {
-                    "羅馬": { 
-                        img: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=1996&auto=format&fit=crop",
-                        path: "#" // 預留路徑
-                    },
-                    "佛羅倫斯": { 
-                        img: "https://images.unsplash.com/photo-1528114637639-54b5a5b3a39c?q=80&w=2070&auto=format&fit=crop",
-                        path: "#" // 預留路徑
-                    },
-                    "威尼斯": { 
-                        img: "https://images.unsplash.com/photo-1520175480921-4edfa29636b2?q=80&w=1974&auto=format&fit=crop",
-                        path: "#" // 預留路徑
-                    }
+                    "羅馬": { img: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=1996&auto=format&fit=crop", path: "#" },
+                    "佛羅倫斯": { img: "https://images.unsplash.com/photo-1528114637639-54b5a5b3a39c?q=80&w=2070&auto=format&fit=crop", path: "#" },
+                    "威尼斯": { img: "https://images.unsplash.com/photo-1520175480921-4edfa29636b2?q=80&w=1974&auto=format&fit=crop", path: "#" }
                 }
             }
         };
 
-        // DOM 元素
         const mainTitle = document.getElementById('main-title');
         const subTitle = document.getElementById('sub-title');
         const countrySelection = document.getElementById('country-selection');
@@ -170,36 +158,32 @@
         const bgImage1 = document.getElementById('bg-image-1');
         const bgImage2 = document.getElementById('bg-image-2');
         let isBg1Active = true;
-
-        // 狀態管理
         let currentState = 'country';
         let selectedCountry = null;
         let selectedCity = null;
 
-        // 背景切換函式
         function changeBackground(newUrl) {
             if (isBg1Active) {
                 bgImage2.style.backgroundImage = `url(${newUrl})`;
                 bgImage2.style.opacity = 1;
+                bgImage1.style.opacity = 0;
             } else {
                 bgImage1.style.backgroundImage = `url(${newUrl})`;
+                bgImage1.style.opacity = 1;
                 bgImage2.style.opacity = 0;
             }
             isBg1Active = !isBg1Active;
         }
 
-        // 動態生成卡片
         function createCard(name, type, imageUrl) {
             const card = document.createElement('div');
-            // 更新：將 h-48 改為 h-64 來增加卡片高度
-            card.className = `card bg-cover bg-center rounded-xl shadow-2xl cursor-pointer h-64 flex items-end p-6 group relative overflow-hidden transition-transform duration-300 hover:scale-105`;
+            card.className = `card bg-cover bg-center rounded-xl shadow-2xl cursor-pointer h-64 flex items-end p-6 group relative overflow-hidden`;
             card.style.backgroundImage = `url(${imageUrl})`;
             card.dataset.name = name;
             card.dataset.type = type;
             const overlay = document.createElement('div');
             overlay.className = 'absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition-all duration-300';
             const text = document.createElement('h3');
-            // 更新：將 text-2xl 改為 text-3xl 來放大文字
             text.className = 'text-3xl font-bold z-10 relative';
             text.textContent = name;
             card.appendChild(overlay);
@@ -208,49 +192,33 @@
             return card;
         }
 
-        // 處理選擇事件
         function handleSelection(name, type) {
-            if (type === 'country') {
-                selectedCountry = name;
-                updateView('city');
-            } else if (type === 'city') {
-                selectedCity = name;
-                updateView('final');
-            }
+            if (type === 'country') { selectedCountry = name; updateView('city'); } 
+            else if (type === 'city') { selectedCity = name; updateView('final'); }
         }
 
-        // 動畫函數：讓卡片有層次地出現
         function animateCardsIn(container) {
             const cards = container.querySelectorAll('.card');
             cards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.classList.add('visible');
-                }, index * 100);
+                setTimeout(() => { card.classList.add('visible'); }, index * 100);
             });
+            setupCardHoverEffects();
         }
 
-        // 動畫函數：讓卡片淡出
         function animateCardsOut(container) {
             const cards = container.querySelectorAll('.card.visible');
             cards.forEach(card => card.classList.remove('visible'));
         }
 
-        // 更新視圖的總函數
         async function updateView(newState) {
             const currentView = document.getElementById(currentState === 'final' ? 'final-link-container' : `${currentState}-selection`);
-
             mainTitle.style.opacity = 0;
             subTitle.style.opacity = 0;
             animateCardsOut(currentView);
-
             await new Promise(resolve => setTimeout(resolve, 500));
             currentView.classList.add('hidden');
-
             currentState = newState;
-            let newView;
-            let newBgUrl;
-            let newTitleText, newSubTitleText;
-
+            let newView, newBgUrl, newTitleText, newSubTitleText;
             if (newState === 'country') {
                 newView = countrySelection;
                 newTitleText = "探索世界";
@@ -275,63 +243,65 @@
                 backButton.classList.add('opacity-100');
                 newBgUrl = travelData[selectedCountry].cities[selectedCity].img;
             }
-
             changeBackground(newBgUrl);
-
             mainTitle.textContent = newTitleText;
             subTitle.textContent = newSubTitleText;
             mainTitle.style.opacity = 1;
             subTitle.style.opacity = 1;
-
-            if(newView) {
+            if (newView) {
                 newView.classList.remove('hidden');
-                requestAnimationFrame(() => animateCardsIn(newView));
+                requestAnimationFrame(() => {
+                    animateCardsIn(newView);
+                });
             }
         }
 
-        // 顯示國家
         function displayCountries() {
             const container = countrySelection.querySelector('.grid');
             container.innerHTML = '';
-            for (const country in travelData) {
-                container.appendChild(createCard(country, 'country', travelData[country].img));
-            }
+            for (const country in travelData) { container.appendChild(createCard(country, 'country', travelData[country].img)); }
         }
 
-        // 顯示城市
         function displayCities(country) {
             const cities = travelData[country].cities;
             const container = citySelection.querySelector('.grid');
             container.innerHTML = '';
-            for (const city in cities) {
-                container.appendChild(createCard(city, 'city', cities[city].img));
-            }
+            for (const city in cities) { container.appendChild(createCard(city, 'city', cities[city].img)); }
         }
 
-        // 顯示最終連結
         function displayFinalLink(country, city) {
             document.getElementById('final-destination').textContent = city;
-            // 從 travelData 物件中讀取正確的路徑
             const path = travelData[country].cities[city].path;
             document.getElementById('final-link').href = path || '#';
         }
 
-        // 返回按鈕事件
+        function setupCardHoverEffects() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--x', `${x}px`);
+                    card.style.setProperty('--y', `${y}px`);
+                    const rotateX = (y / rect.height - 0.5) * -18;
+                    const rotateY = (x / rect.width - 0.5) * 18;
+                    card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1200px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+                });
+            });
+        }
+
         backButton.addEventListener('click', () => {
-            if (currentState === 'final') {
-                updateView('city');
-            } else if (currentState === 'city') {
-                selectedCity = null;
-                updateView('country');
-            }
+            if (currentState === 'final') { updateView('city'); } 
+            else if (currentState === 'city') { selectedCity = null; updateView('country'); }
         });
 
-        // 初始化頁面
         window.onload = () => {
             displayCountries();
             animateCardsIn(countrySelection);
         };
-
     </script>
 </body>
 </html>
